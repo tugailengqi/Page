@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.ApplyMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.vo.ApplyVo">
+    <!--@mbg.generated-->
+    <id column="a_id" jdbcType="INTEGER" property="aId" />
+    <result column="p_id" jdbcType="VARCHAR" property="pId" />
+    <result column="u_id" jdbcType="INTEGER" property="uId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
+    <result column="m_id" jdbcType="INTEGER" property="mId"/>
+      <result column="access" jdbcType="INTEGER" property="access"/>
+    <collection property="userList" resultMap="com.lq.page.mapper.UserMapper.BaseResultMap"/>
+    <collection property="positionList" resultMap="com.lq.page.mapper.PositionMapper.BaseResultMap"/>
+  </resultMap>
+  <resultMap id="ApplyBaseMap" type="com.lq.page.domain.vo.ApplyVo">
+    <result property="mId" column="m_id"/>
+    <result property="uId" column="uid"/>
+    <result property="crtTime" column="crt_time"/>
+      <result column="access" jdbcType="INTEGER" property="access"/>
+    <collection property="userList" resultMap="com.lq.page.mapper.UserMapper.UserBaseMap"/>
+    <collection property="positionList" resultMap="com.lq.page.mapper.PositionMapper.PositionMap"/>
+    <collection property="resumeAndPosition" resultMap="com.lq.page.mapper.UserInfoMapper.UserInfoMap"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    a_id
+  </sql>
+    <insert id="insertApply">
+      INSERT INTO apply(p_id, u_id,m_id) VALUES (#{pId},#{uId},#{mId})
+    </insert>
+<!--  FOR UPDATE 悲观锁，消耗资源，不建议大量使用-->
+  <select id="findByUid" resultMap="BaseResultMap">
+    SELECT a_id,a.crt_time,u.u_id,a.m_id,p_num,
+    username, password, sex,addrs, u.flag, p.p_id, responsibility,
+    position_name, public_time, work_position,a.m_id,p_num,
+    position_type, p_required, work_experience, department_name, degree
+    FROM apply a LEFT JOIN position p ON a.p_id = p.p_id
+    LEFT JOIN user u ON a.u_id = u.u_id
+    WHERE u.u_id = #{uId} AND u.flag = 0 FOR UPDATE
+  </select>
+  <update id="deleteApply">
+    DELETE FROM  apply  WHERE u_id = #{uId} AND p_id = #{pId}
+  </update>
+  <select id="findByMid" resultMap="ApplyBaseMap">
+    SELECT a.m_id,a.u_id uid,a.crt_time,a.access,
+           u.u_id uid,u.username,u.sex,u.addrs,
+           u2.u_id u2_id,u2.u_info_id,u2.username u2_username, u2.phone, u2.email, u2.work_experience, u2.now_palce, u2.wish_workplace, u2.most_education,
+            we.work_id,we.work_unit, we.job, we.work_start_time, we.work_end_time, we.work_responsibilities,
+           te.t_id,te.train_institutions, te.certificate, te.train_contents, te.train_start_time, te.train_end_time,
+            ee.e_id,school, ee.major, ee.education_start_time, ee.education_end_time, ee.education, ee.major_description,
+            fu.m_id, fu.image, fu.resume, fu.works, fu.other,
+            pe.pro_id, pe.project_name, pe.project_start_time, pe.project_end_time, pe.responsibilities,
+            p.p_id, p.responsibility, p.position_name, p.public_time, p.work_position, p.position_type, p.p_required, p.work_experience p_work_experience, p.department_name, p.degree, p.flag p_flag, p.m_id p_mid, p.p_num, p.is_delete
+    FROM apply a
+    LEFT JOIN user u ON a.u_id = u.u_id
+    LEFT JOIN userinfo u2 ON u.u_id = u2.u_id
+    LEFT JOIN work_experience we ON u2.u_info_id = we.u_info_id
+    LEFT JOIN train_experience te ON u2.u_info_id = te.u_info_id
+    LEFT JOIN eduction_experience ee ON u2.u_info_id = ee.u_info_id
+    LEFT JOIN file_user fu ON u2.u_info_id = fu.u_info_id
+    LEFT JOIN project_experience pe ON u2.u_info_id = pe.u_info_id
+    LEFT JOIN position p ON a.p_id = p.p_id
+    WHERE a.m_id = #{mId} AND a.access = #{access}
+  </select>
+  <select id="findByWorkExperience" resultMap="ApplyBaseMap">
+    SELECT a.m_id,a.u_id uid,a.crt_time,a.access,
+    u.u_id uid,u.username,u.sex,u.addrs,
+    u2.u_id u2_id,u2.u_info_id,u2.username u2_username, u2.phone, u2.email, u2.work_experience, u2.now_palce, u2.wish_workplace, u2.most_education,
+    we.work_id,we.work_unit, we.job, we.work_start_time, we.work_end_time, we.work_responsibilities,
+    te.t_id,te.train_institutions, te.certificate, te.train_contents, te.train_start_time, te.train_end_time,
+    ee.e_id,school, ee.major, ee.education_start_time, ee.education_end_time, ee.education, ee.major_description,
+    fu.m_id, fu.image, fu.resume, fu.works, fu.other,
+    pe.pro_id, pe.project_name, pe.project_start_time, pe.project_end_time, pe.responsibilities,
+    p.p_id, p.responsibility, p.position_name, p.public_time, p.work_position, p.position_type, p.p_required, p.work_experience p_work_experience, p.department_name, p.degree, p.flag p_flag, p.m_id p_mid, p.p_num, p.is_delete
+    FROM apply a
+    LEFT JOIN user u ON a.u_id = u.u_id
+    LEFT JOIN userinfo u2 ON u.u_id = u2.u_id
+    LEFT JOIN work_experience we ON u2.u_info_id = we.u_info_id
+    LEFT JOIN train_experience te ON u2.u_info_id = te.u_info_id
+    LEFT JOIN eduction_experience ee ON u2.u_info_id = ee.u_info_id
+    LEFT JOIN file_user fu ON u2.u_info_id = fu.u_info_id
+    LEFT JOIN project_experience pe ON u2.u_info_id = pe.u_info_id
+    LEFT JOIN position p ON a.p_id = p.p_id
+    WHERE u2.work_experience IN
+    <foreach collection="workExperience" item="workExperience" open="(" separator="," close=")">
+      #{workExperience,jdbcType=VARCHAR}
+    </foreach>
+    AND u2.most_education IN
+    <foreach collection="education" item="education" open="(" separator="," close=")">
+      #{education,jdbcType=VARCHAR}
+    </foreach>
+    AND a.access = #{access}
+  </select>
+  <update id="updateAccess">
+    UPDATE apply SET access = #{access,jdbcType=INTEGER}
+    WHERE u_id IN
+    <foreach collection="uid" item="uid" open="(" separator="," close=")">
+      #{uid,jdbcType=INTEGER}
+    </foreach>
+  </update>
+</mapper>

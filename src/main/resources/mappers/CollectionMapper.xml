@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.CollectionMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.vo.CollectionVo">
+    <!--@mbg.generated-->
+    <id column="c_id" jdbcType="INTEGER" property="cId" />
+      <result column="c_flag" property="cFlag"/>
+      <result column="u_id" property="uId"/>
+      <collection property="positionList" resultMap="com.lq.page.mapper.PositionMapper.BaseResultMap"/>
+      <collection property="userList" resultMap="com.lq.page.mapper.UserMapper.BaseResultMap"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    c_id, p_id, u_id
+  </sql>
+    <insert id="addCollection">
+        INSERT INTO collection(p_id, u_id) VALUES (#{pId},#{uId})
+    </insert>
+    <select id="findByUid" resultMap="BaseResultMap">
+        SELECT DISTINCT c_id,u.u_id,c_flag,c.u_id,
+               username, password, sex,addrs, u.flag, p.p_id, responsibility,
+               position_name, public_time, work_position,m_id,p_num,
+               position_type, p_required, work_experience, department_name, degree
+        FROM collection c
+        LEFT JOIN user u ON c.u_id = u.u_id
+        LEFT JOIN position p ON c.p_id = p.p_id
+        WHERE u.u_id = #{uId} AND u.flag = 0
+    </select>
+    <delete id="deleteCollection">
+        DELETE FROM collection WHERE u_id = #{uId} AND p_id = #{pId}
+    </delete>
+    <update id="updateFlag">
+        UPDATE collection SET c_flag = #{flag}
+        WHERE p_id = #{pId,jdbcType=INTEGER} AND u_id = #{uid,jdbcType=INTEGER}
+    </update>
+
+</mapper>

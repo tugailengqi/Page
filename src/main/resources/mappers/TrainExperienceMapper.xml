@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.TrainExperienceMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.TrainExperience">
+    <!--@mbg.generated-->
+    <id column="t_id" jdbcType="INTEGER" property="tId" />
+    <result column="u_info_id" jdbcType="INTEGER" property="uInfoId"/>
+    <result column="train_institutions" jdbcType="VARCHAR" property="trainInstitutions" />
+    <result column="certificate" jdbcType="VARCHAR" property="certificate" />
+    <result column="train_contents" jdbcType="VARCHAR" property="trainContents" />
+    <result column="train_start_time" jdbcType="VARCHAR" property="trainStartTime" />
+    <result column="train_end_time" jdbcType="VARCHAR" property="trainEndTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    train_institutions, certificate, train_contents,train_start_time,train_end_time
+  </sql>
+  <insert id="insertTrain" parameterType="com.lq.page.domain.entity.TrainExperience">
+    <!--@mbg.generated-->
+    insert into train_experience (u_info_id, train_institutions, certificate,train_contents,train_start_time,train_end_time)
+    values (#{record.uInfoId,jdbcType=INTEGER}, #{record.trainInstitutions,jdbcType=VARCHAR}, #{record.certificate,jdbcType=VARCHAR},
+      #{record.trainContents,jdbcType=VARCHAR},#{record.trainStartTime,jdbcType=VARCHAR},#{record.trainEndTime,jdbcType=VARCHAR})
+  </insert>
+
+    <update id="updateTrain">
+      UPDATE train_experience SET
+      train_institutions = #{record.trainInstitutions,jdbcType=VARCHAR},certificate = #{record.certificate,jdbcType=VARCHAR},train_contents = #{record.trainContents,jdbcType=VARCHAR}
+      ,train_start_time = #{record.trainStartTime,jdbcType=VARCHAR},train_end_time = #{record.trainEndTime,jdbcType=VARCHAR}
+      WHERE t_id = #{record.tId,jdbcType=INTEGER}
+
+    </update>
+</mapper>

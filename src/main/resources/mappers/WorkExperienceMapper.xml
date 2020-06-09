@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.WorkExperienceMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.WorkExperience">
+    <!--@mbg.generated-->
+    <id column="work_id" jdbcType="INTEGER" property="workId" />
+    <result column="u_info_id" jdbcType="INTEGER" property="uInfoId"/>
+    <result column="work_unit" jdbcType="VARCHAR" property="workUnit" />
+    <result column="job" jdbcType="VARCHAR" property="job" />
+    <result column="work_start_time" jdbcType="VARCHAR" property="workStartTime" />
+    <result column="work_end_time" jdbcType="VARCHAR" property="workEndTime" />
+    <result column="work_responsibilities" jdbcType="VARCHAR" property="workResponsibilities" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    work_id, work_unit, job, work_start_time, work_end_time,work_responsibilities,u_info_id
+  </sql>
+  <insert id="insertWorkExperience" keyColumn="work_id" keyProperty="workId" parameterType="com.lq.page.domain.entity.WorkExperience" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into work_experience (u_info_id, work_unit, job,
+      work_start_time, work_end_time, work_responsibilities
+      )
+    values (#{workExperience.uInfoId,jdbcType=INTEGER}, #{workExperience.workUnit,jdbcType=VARCHAR}, #{workExperience.job,jdbcType=VARCHAR},
+      #{workExperience.workStartTime,jdbcType=TIMESTAMP}, #{workExperience.workEndTime,jdbcType=TIMESTAMP}, #{workExperience.workResponsibilities,jdbcType=VARCHAR}
+      )
+  </insert>
+    <update id="updateWork">
+      UPDATE work_experience SET
+      work_unit = #{work.workUnit,jdbcType=VARCHAR},job = #{work.job,jdbcType=VARCHAR},
+      work_start_time = #{work.workStartTime,jdbcType=VARCHAR},work_end_time = #{work.workEndTime,jdbcType=VARCHAR},
+      work_responsibilities = #{work.workResponsibilities,jdbcType=VARCHAR}
+      WHERE work_id = #{work.workId,jdbcType=INTEGER}
+    </update>
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+<!--    //加载配置文件-->
+    <context:property-placeholder location="classpath:config/db.properties"/>
+<!--    SqlSessionFactory
+        配置：
+        1.连接池
+        2.mapper文件信息
+        3.别名typeAliasesPackage-可选
+        4.插件-可选
+-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"
+          p:dataSource-ref="dataSource" p:typeAliasesPackage="com.lq.page.domain.entity"
+          p:configLocation="classpath:mybatis-config.xml"
+          p:mapperLocations="classpath:mappers/**/*.xml"
+    />
+
+<!--    扫描所有的mapper，为每个dao定制实现类， sqlSession.getMapper(xxx.Class)
+        DAO实现的对象会 纳入工厂 并且beanID = DAO的首字母小写的接口类名="xxxMapper"
+        1>DAO接口
+        2>DAO映射文件
+        3>SqlSession
+-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.lq.page.mapper"/>
+    </bean>
+
+    <!--配置druid-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
+
+        <!-- 常用配置  大量的数据库连接超时的 适当的增加 -->
+        <property name="maxActive" value="20" />
+        <property name="minIdle" value="1" />
+        <property name="initialSize" value="1" />
+
+        <property name="filters" value="stat" />
+        <property name="maxWait" value="60000" />
+
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+
+        <property name="testWhileIdle" value="true" />
+        <property name="testOnBorrow" value="false" />
+        <property name="testOnReturn" value="false" />
+
+        <property name="poolPreparedStatements" value="true" />
+        <property name="maxOpenPreparedStatements" value="20" />
+
+        <property name="asyncInit" value="true" />
+    </bean>
+<!--    事务管理-->
+<!--    <bean id="tx" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">-->
+<!--        <property name="dataSource" ref="dataSource"/>-->
+<!--    </bean>-->
+<!--    事务管理的额外功能-->
+<!--    事务的管理由tx提供-->
+<!--    <tx:advice id="txManager" transaction-manager="tx">-->
+<!--        <tx:attributes>-->
+<!--&lt;!&ndash;            可能切入的方法&ndash;&gt;-->
+<!--&lt;!&ndash;            propagation :默认为required&ndash;&gt;-->
+<!--&lt;!&ndash;            read-only:读写性-->
+<!--           true：只读事务，事务中出现查询行为&ndash;&gt;-->
+<!--        false：读写事务，事务中可以出现curd行为（默认值）-->
+<!--            &ndash;&gt;-->
+<!--&lt;!&ndash;            rollback-for：回滚时刻&ndash;&gt;-->
+<!--&lt;!&ndash;            1.如果事务中抛出运行时异常（RuntimeException），则自动回滚&ndash;&gt;-->
+<!--&lt;!&ndash;            2.如果事务中抛出已检查异常（非运行时异常 Exception），不会自动回滚，默认提交事务&ndash;&gt;-->
+<!--&lt;!&ndash;            <tx:method name="addUser" isolation="DEFAULT" propagation="REQUIRED" read-only="false" rollback-for="Exception"/>&ndash;&gt;-->
+<!--            <tx:method name="addUser" rollback-for="Exception"/>-->
+<!--&lt;!&ndash;            *是匹配所有剩下的方法，等到上面的方法执行完，*才有机会执行&ndash;&gt;-->
+<!--            <tx:method name="*" isolation="READ_COMMITTED" propagation="SUPPORTS"/>-->
+<!--        </tx:attributes>-->
+<!--    </tx:advice>-->
+
+</beans>

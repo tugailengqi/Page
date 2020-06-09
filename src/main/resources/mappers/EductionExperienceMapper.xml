@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.EductionExperienceMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.EductionExperience">
+    <!--@mbg.generated-->
+    <id column="e_id" jdbcType="INTEGER" property="eId" />
+    <result column="u_info_id" jdbcType="INTEGER" property="uInfoId"/>
+    <result column="school" jdbcType="VARCHAR" property="school" />
+    <result column="major" jdbcType="VARCHAR" property="major" />
+    <result column="education_start_time" jdbcType="VARCHAR" property="educationStartTime" />
+    <result column="education_end_time" jdbcType="VARCHAR" property="educationEndTime" />
+    <result column="education" jdbcType="VARCHAR" property="education" />
+    <result column="major_description" jdbcType="VARCHAR" property="majorDescription" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    e_id,school,u_info_id, major, education_start_time, education_end_time, education, major_description
+  </sql>
+  <insert id="insert" keyColumn="e_id" keyProperty="eId" parameterType="com.lq.page.domain.entity.EductionExperience" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into eduction_experience (u_info_id, school, major,education_start_time,education_end_time,education, major_description)
+    values (#{eduction.uInfoId,jdbcType=INTEGER}, #{eduction.school,jdbcType=VARCHAR}, #{eduction.major,jdbcType=VARCHAR},
+      #{eduction.educationStartTime,jdbcType=VARCHAR}, #{eduction.educationEndTime,jdbcType=VARCHAR},
+      #{eduction.education,jdbcType=VARCHAR}, #{eduction.majorDescription,jdbcType=VARCHAR})
+  </insert>
+    <update id="update">
+      UPDATE eduction_experience SET
+      school = #{eduction.school,jdbcType=VARCHAR},major = #{eduction.major,jdbcType=VARCHAR},
+      education_start_time = #{eduction.educationStartTime,jdbcType=VARCHAR},education_end_time = #{eduction.educationEndTime,jdbcType=VARCHAR}
+      ,education = #{eduction.education},major_description = #{eduction.majorDescription,jdbcType=VARCHAR}
+      WHERE e_id = #{eduction.eId,jdbcType=INTEGER}
+    </update>
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.User">
+    <!--@mbg.generated-->
+    <id column="u_id" jdbcType="INTEGER" property="uId" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="sex" jdbcType="CHAR" property="sex" />
+    <result column="addrs" jdbcType="VARCHAR" property="addrs" />
+    <result column="flag" jdbcType="INTEGER" property="flag" />
+  </resultMap>
+  <resultMap id="UserBaseMap" type="com.lq.page.domain.entity.User">
+    <!--@mbg.generated-->
+    <id column="uid" jdbcType="INTEGER" property="uId" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="sex" jdbcType="CHAR" property="sex" />
+    <result column="addrs" jdbcType="VARCHAR" property="addrs" />
+    <result column="flag" jdbcType="INTEGER" property="flag" />
+  </resultMap>
+  <resultMap id="UserVoBaseMap" type="com.lq.page.domain.vo.UserVo">
+    <!--@mbg.generated-->
+    <id column="uid" jdbcType="INTEGER" property="uId" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="sex" jdbcType="CHAR" property="sex" />
+    <result column="addrs" jdbcType="VARCHAR" property="addrs" />
+    <result column="flag" jdbcType="INTEGER" property="flag" />
+    <collection property="userInfo" resultMap="com.lq.page.mapper.UserInfoMapper.BaseResultMap"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    u_id, username, `password`,sex,addrs, flag
+  </sql>
+    <select id="findByUsername" resultMap="BaseResultMap">
+      SELECT <include refid="Base_Column_List"/>
+      FROM user WHERE username = #{username}
+    </select>
+  <insert id="addUser">
+    INSERT INTO user(username, password, sex,addrs)
+     VALUES(#{user.username,jdbcType=VARCHAR},#{user.password,jdbcType=VARCHAR},#{user.sex,jdbcType=VARCHAR}, #{user.addrs,jdbcType=VARCHAR})
+  </insert>
+  <select id="findById" resultMap="UserVoBaseMap">
+    select u.u_id,u.username,u.password,u.flag,u.sex,
+           u2.u_info_id
+    FROM user u
+    LEFT JOIN userinfo u2 ON u.u_id = u2.u_id
+    WHERE u.u_id = #{uId}
+
+  </select>
+    <select id="countUser" resultType="int">
+      SELECT count(1) FROM user
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+      SELECT <include refid="Base_Column_List"/>
+        FROM user
+    </select>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.ProjectExperienceMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.ProjectExperience">
+    <!--@mbg.generated-->
+    <id column="pro_id" jdbcType="INTEGER" property="proId" />
+    <result column="u_info_id" jdbcType="INTEGER" property="uInfoId"/>
+    <result column="project_name" jdbcType="VARCHAR" property="projectName" />
+    <result column="project_start_time" jdbcType="VARCHAR" property="projectStartTime" />
+    <result column="project_end_time" jdbcType="VARCHAR" property="projectEndTime" />
+    <result column="responsibilities" jdbcType="VARCHAR" property="responsibilities" />
+  </resultMap>
+  <sql id="Base_Project_list">
+    <!--@mbg.generated-->
+    project_name, project_start_time, project_end_time,responsibilities,u_info_id
+  </sql>
+  <insert id="insert" keyColumn="pro_id" keyProperty="proId" parameterType="com.lq.page.domain.entity.ProjectExperience" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into project_experience (u_info_id, project_name, project_start_time,project_end_time, responsibilities)
+    values (#{projectExperience.uInfoId,jdbcType=INTEGER}, #{projectExperience.projectName,jdbcType=VARCHAR}, #{projectExperience.projectStartTime,jdbcType=VARCHAR},
+      #{projectExperience.projectEndTime,jdbcType=VARCHAR}, #{projectExperience.responsibilities,jdbcType=VARCHAR})
+  </insert>
+    <update id="update">
+        UPDATE project_experience SET
+        project_name = #{project.projectName,jdbcType=VARCHAR},project_start_time = #{project.projectStartTime,jdbcType=VARCHAR},
+        project_end_time = #{project.projectEndTime,jdbcType=VARCHAR},responsibilities = #{project.responsibilities,jdbcType=VARCHAR}
+        WHERE pro_id = #{project.proId,jdbcType=INTEGER}
+    </update>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.PendingMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.Pending">
+    <!--@mbg.generated-->
+    <id column="r_id" jdbcType="INTEGER" property="rId" />
+    <result column="u_info_id" jdbcType="INTEGER" property="uInfoId" />
+    <result column="flag" jdbcType="INTEGER" property="flag" />
+    <result column="m_id" jdbcType="INTEGER" property="mId"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    r_id, u_info_id, flag
+  </sql>
+
+  <insert id="insert" keyColumn="r_id" keyProperty="rId" parameterType="com.lq.page.domain.entity.Pending" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into pending (u_info_id,flag,m_id)
+    values (#{uInfoId,jdbcType=INTEGER}, #{flag,jdbcType=INTEGER},#{mid,jdbcType=INTEGER})
+  </insert>
+    <select id="findByFlag" resultMap="com.lq.page.mapper.UserInfoMapper.ResumeMap">
+      SELECT ui.u_info_id, ui.u_id ui_uid, ui.username ui_username, phone, email, work_experience, now_palce, wish_workplace, most_education,
+             u.*,
+             ee.e_id, school, major, education_start_time, education_end_time, education, major_description, ee.u_info_id,
+             fu.m_id, image, resume, works, other, fu.u_info_id,
+             te.t_id, train_institutions, certificate, train_contents, train_start_time, train_end_time, te.u_info_id,
+             we.work_id, work_unit, job, work_start_time, work_end_time, work_responsibilities, we.u_info_id,
+             pe.pro_id, project_name, project_start_time, project_end_time, responsibilities, pe.u_info_id
+      FROM userinfo ui
+             LEFT JOIN user u ON ui.u_id = u.u_id
+             LEFT JOIN eduction_experience ee ON ui.u_info_id = ee.u_info_id
+             LEFT JOIN file_user fu ON ui.u_info_id = fu.u_info_id
+             LEFT JOIN train_experience te ON ui.u_info_id = te.u_info_id
+             LEFT JOIN work_experience we ON ui.u_info_id = we.u_info_id
+             LEFT JOIN project_experience pe ON ui.u_info_id = pe.u_info_id
+             LEFT JOIN pending p ON ui.u_info_id = p.u_info_id
+    WHERE p.flag = #{flag} AND p.m_id = #{mid,jdbcType=INTEGER}
+    </select>
+  <select id="findByWorkExperience" resultMap="com.lq.page.mapper.UserInfoMapper.ResumeMap">
+    <!--@mbg.generated-->
+    SELECT ui.u_info_id, ui.u_id ui_uid, ui.username ui_username, phone, email, work_experience, now_palce, wish_workplace, most_education,
+    u.*,
+    ee.e_id, school, major, education_start_time, education_end_time, education, major_description, ee.u_info_id,
+    fu.m_id, image, resume, works, other, fu.u_info_id,
+    te.t_id, train_institutions, certificate, train_contents, train_start_time, train_end_time, te.u_info_id,
+    we.work_id, work_unit, job, work_start_time, work_end_time, work_responsibilities, we.u_info_id,
+    pe.pro_id, project_name, project_start_time, project_end_time, responsibilities, pe.u_info_id
+    FROM userinfo ui
+    LEFT JOIN user u ON ui.u_id = u.u_id
+    LEFT JOIN eduction_experience ee ON ui.u_info_id = ee.u_info_id
+    LEFT JOIN file_user fu ON ui.u_info_id = fu.u_info_id
+    LEFT JOIN train_experience te ON ui.u_info_id = te.u_info_id
+    LEFT JOIN work_experience we ON ui.u_info_id = we.u_info_id
+    LEFT JOIN project_experience pe ON ui.u_info_id = pe.u_info_id
+    LEFT JOIN pending p ON ui.u_info_id = p.u_info_id
+    LEFT JOIN member m ON p.m_id = m.m_id
+    WHERE ui.work_experience IN
+    <foreach collection="works" item="workExperience" open="(" separator="," close=")">
+      #{workExperience,jdbcType=VARCHAR}
+    </foreach>
+    AND ui.most_education IN
+    <foreach collection="educations" item="education" open="(" separator="," close=")">
+      #{education,jdbcType=VARCHAR}
+    </foreach>
+    AND p.flag = #{flag,jdbcType=INTEGER}
+    AND p.m_id = #{mid,jdbcType=INTEGER}
+  </select>
+  <delete id="delete">
+    DELETE FROM pending
+    WHERE u_info_id = #{uInfoId,jdbcType=INTEGER}
+  </delete>
+
+</mapper>

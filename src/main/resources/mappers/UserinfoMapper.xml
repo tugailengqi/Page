@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.UserInfoMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.UserInfo">
+    <!--@mbg.generated-->
+    <id column="u_info_id" jdbcType="INTEGER" property="uInfoId" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="work_experience" jdbcType="VARCHAR" property="workExperience" />
+    <result column="now_palce" jdbcType="VARCHAR" property="nowPalce" />
+    <result column="wish_workplace" jdbcType="VARCHAR" property="wishWorkplace" />
+    <result column="most_education" jdbcType="VARCHAR" property="mostEducation" />
+  </resultMap>
+
+  <resultMap id="UserInfoMap" type="com.lq.page.domain.vo.ResumeAndPosition">
+    <id column="u_info_id" jdbcType="INTEGER" property="uInfoId" />
+    <result column="u2_id" jdbcType="INTEGER" property="uId"/>
+    <result column="u2_username" jdbcType="VARCHAR" property="username" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="work_experience" jdbcType="VARCHAR" property="workExperience" />
+    <result column="now_palce" jdbcType="VARCHAR" property="nowPalce" />
+    <result column="wish_workplace" jdbcType="VARCHAR" property="wishWorkplace" />
+    <result column="most_education" jdbcType="VARCHAR" property="mostEducation" />
+    <collection property="workExperienceList" resultMap="com.lq.page.mapper.WorkExperienceMapper.BaseResultMap"/>
+    <collection property="eductionExperienceList" resultMap="com.lq.page.mapper.EductionExperienceMapper.BaseResultMap"/>
+    <collection property="fileUserList" resultMap="com.lq.page.mapper.FileUserMapper.BaseResultMap"/>
+    <collection property="projectExperienceList" resultMap="com.lq.page.mapper.ProjectExperienceMapper.BaseResultMap"/>
+    <collection property="trainExperienceList" resultMap="com.lq.page.mapper.TrainExperienceMapper.BaseResultMap"/>
+  </resultMap>
+
+  <resultMap id="ResumeMap" type="com.lq.page.domain.vo.ResumeAndPosition">
+    <id column="u_info_id" jdbcType="INTEGER" property="uInfoId" />
+    <result column="ui_uid" jdbcType="INTEGER" property="uId"/>
+    <result column="ui_username" jdbcType="VARCHAR" property="username" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="work_experience" jdbcType="VARCHAR" property="workExperience" />
+    <result column="now_palce" jdbcType="VARCHAR" property="nowPalce" />
+    <result column="wish_workplace" jdbcType="VARCHAR" property="wishWorkplace" />
+    <result column="most_education" jdbcType="VARCHAR" property="mostEducation" />
+    <collection property="workExperienceList" resultMap="com.lq.page.mapper.WorkExperienceMapper.BaseResultMap"/>
+    <collection property="eductionExperienceList" resultMap="com.lq.page.mapper.EductionExperienceMapper.BaseResultMap"/>
+    <collection property="fileUserList" resultMap="com.lq.page.mapper.FileUserMapper.BaseResultMap"/>
+    <collection property="projectExperienceList" resultMap="com.lq.page.mapper.ProjectExperienceMapper.BaseResultMap"/>
+    <collection property="trainExperienceList" resultMap="com.lq.page.mapper.TrainExperienceMapper.BaseResultMap"/>
+    <collection property="user" resultMap="com.lq.page.mapper.UserMapper.UserBaseMap"/>
+   </resultMap>
+
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    u_info_id,email,phone,work_experience, now_palce, wish_workplace,most_education,username
+  </sql>
+  <select id="findById" parameterType="java.lang.Integer" resultMap="ResumeMap">
+    <!--@mbg.generated-->
+    SELECT ui.u_info_id, ui.u_id ui_uid, ui.username ui_username, phone, email, work_experience, now_palce, wish_workplace, most_education,
+           ee.e_id, school, major, education_start_time, education_end_time, education, major_description, ee.u_info_id,
+           fu.m_id, image, resume, works, other, fu.u_info_id,
+           te.t_id, train_institutions, certificate, train_contents, train_start_time, train_end_time, te.u_info_id,
+           we.work_id, work_unit, job, work_start_time, work_end_time, work_responsibilities, we.u_info_id,
+           pe.pro_id, project_name, project_start_time, project_end_time, responsibilities, pe.u_info_id
+    FROM userinfo ui
+    LEFT JOIN user u ON ui.u_id = u.u_id
+    LEFT JOIN eduction_experience ee ON ui.u_info_id = ee.u_info_id
+    LEFT JOIN file_user fu ON ui.u_info_id = fu.u_info_id
+    LEFT JOIN train_experience te ON ui.u_info_id = te.u_info_id
+    LEFT JOIN work_experience we ON ui.u_info_id = we.u_info_id
+    LEFT JOIN project_experience pe ON ui.u_info_id = pe.u_info_id
+    WHERE ui.u_id = #{uId};
+  </select>
+
+  <insert id="addUserInfo">
+    <!--@mbg.generated-->
+    insert into userinfo (u_id, username, phone, 
+      email, work_experience, now_palce, 
+      wish_workplace, most_education
+      )
+    values (#{userInfo.uId,jdbcType=INTEGER}, #{userInfo.username,jdbcType=VARCHAR}, #{userInfo.phone,jdbcType=VARCHAR},
+      #{userInfo.email,jdbcType=VARCHAR}, #{userInfo.workExperience,jdbcType=VARCHAR}, #{userInfo.nowPalce,jdbcType=VARCHAR},
+      #{userInfo.wishWorkplace,jdbcType=VARCHAR}, #{userInfo.mostEducation,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateUserInfo">
+    UPDATE userinfo SET
+    username = #{userInfo.username,jdbcType=VARCHAR},phone = #{userInfo.phone,jdbcType=VARCHAR},
+            email = #{userInfo.email,jdbcType=VARCHAR},work_experience = #{userInfo.workExperience,jdbcType=VARCHAR},
+            now_palce = #{param1.nowPalce,jdbcType=VARCHAR},wish_workplace = #{userInfo.wishWorkplace,jdbcType=VARCHAR},
+                        most_education = #{userInfo.mostEducation,jdbcType=VARCHAR}
+    WHERE u_info_id = #{userInfo.uInfoId,jdbcType=INTEGER}
+  </update>
+  <select id="findAll" resultMap="ResumeMap">
+    <!--@mbg.generated-->
+    SELECT ui.u_info_id, ui.u_id ui_uid, ui.username ui_username, phone, email, work_experience, now_palce, wish_workplace, most_education,
+           u.*,
+    ee.e_id, school, major, education_start_time, education_end_time, education, major_description, ee.u_info_id,
+    fu.m_id, image, resume, works, other, fu.u_info_id,
+    te.t_id, train_institutions, certificate, train_contents, train_start_time, train_end_time, te.u_info_id,
+    we.work_id, work_unit, job, work_start_time, work_end_time, work_responsibilities, we.u_info_id,
+    pe.pro_id, project_name, project_start_time, project_end_time, responsibilities, pe.u_info_id
+    FROM userinfo ui
+    LEFT JOIN user u ON ui.u_id = u.u_id
+    LEFT JOIN eduction_experience ee ON ui.u_info_id = ee.u_info_id
+    LEFT JOIN file_user fu ON ui.u_info_id = fu.u_info_id
+    LEFT JOIN train_experience te ON ui.u_info_id = te.u_info_id
+    LEFT JOIN work_experience we ON ui.u_info_id = we.u_info_id
+    LEFT JOIN project_experience pe ON ui.u_info_id = pe.u_info_id
+  </select>
+  <select id="findByWorkExperience" resultMap="ResumeMap">
+    <!--@mbg.generated-->
+    SELECT ui.u_info_id, ui.u_id ui_uid, ui.username ui_username, phone, email, work_experience, now_palce, wish_workplace, most_education,
+           u.*,
+    ee.e_id, school, major, education_start_time, education_end_time, education, major_description, ee.u_info_id,
+    fu.m_id, image, resume, works, other, fu.u_info_id,
+    te.t_id, train_institutions, certificate, train_contents, train_start_time, train_end_time, te.u_info_id,
+    we.work_id, work_unit, job, work_start_time, work_end_time, work_responsibilities, we.u_info_id,
+    pe.pro_id, project_name, project_start_time, project_end_time, responsibilities, pe.u_info_id
+    FROM userinfo ui
+    LEFT JOIN user u ON ui.u_id = u.u_id
+    LEFT JOIN eduction_experience ee ON ui.u_info_id = ee.u_info_id
+    LEFT JOIN file_user fu ON ui.u_info_id = fu.u_info_id
+    LEFT JOIN train_experience te ON ui.u_info_id = te.u_info_id
+    LEFT JOIN work_experience we ON ui.u_info_id = we.u_info_id
+    LEFT JOIN project_experience pe ON ui.u_info_id = pe.u_info_id
+    WHERE ui.work_experience IN
+    <foreach collection="works" item="workExperience" open="(" separator="," close=")">
+      #{workExperience,jdbcType=VARCHAR}
+    </foreach>
+    AND ui.most_education IN
+    <foreach collection="educations" item="education" open="(" separator="," close=")">
+      #{education,jdbcType=VARCHAR}
+    </foreach>
+  </select>
+</mapper>

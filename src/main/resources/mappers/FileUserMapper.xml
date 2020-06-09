@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lq.page.mapper.FileUserMapper">
+  <resultMap id="BaseResultMap" type="com.lq.page.domain.entity.FileUser">
+    <!--@mbg.generated-->
+    <id column="m_id" jdbcType="INTEGER" property="mId" />
+    <result column="u_info_id" jdbcType="INTEGER" property="uInfoId" />
+    <result column="image" jdbcType="VARCHAR" property="image" />
+    <result column="resume" jdbcType="VARCHAR" property="resume" />
+    <result column="works" jdbcType="VARCHAR" property="works" />
+    <result column="other" jdbcType="VARCHAR" property="other" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    image, resume, works, other,u_info_id
+  </sql>
+  <insert id="addImage">
+    INSERT INTO file_user(u_info_id,image)
+    VALUES (#{uInfoId},#{image})
+  </insert>
+    <update id="updateImg">
+      UPDATE file_user SET image = #{image,jdbcType=VARCHAR}
+      WHERE m_id = #{mid,jdbcType=INTEGER}
+    </update>
+  <update id="updateresume">
+    UPDATE file_user SET resume = #{resume,jdbcType=VARCHAR}
+    WHERE m_id = #{mid,jdbcType=INTEGER}
+  </update>
+  <update id="updateWorkFile">
+    UPDATE file_user SET works = #{works,jdbcType=VARCHAR}
+    WHERE m_id = #{mid,jdbcType=INTEGER}
+  </update>
+  <update id="updateOther">
+    UPDATE file_user SET other = #{other,jdbcType=VARCHAR}
+    WHERE m_id = #{mid,jdbcType=INTEGER}
+  </update>
+</mapper>
