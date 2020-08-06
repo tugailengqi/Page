@@ -8,9 +8,7 @@ import lombok.NonNull;
 
 @Data
 public class Member {
-    /**
-    * 会员id
-    */
+
     private Integer mId;
 
     /**
