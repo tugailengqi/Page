@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link href="font-awesome-4.7.0/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<!--    <link rel="stylesheet" type="text/css" href="css/register.css">-->
+    <script src="js/jquery.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/Validform_v5.3.2_min.js"></script>
+
+    <script>
+        let USER_REGISTER_URL = 'http://localhost:8080/Page_war/user/register';
+        let U_FIND_BY_NAME_URL = 'http://localhost:8080/Page_war/user/queryByName';
+        let ENTERPRISE__REGISTER_URL= 'http://localhost:8080/Page_war/enterprise/register';
+        let E_FIND_BY_NAME_URL = 'http://localhost:8080/Page_war/enterprise/queryEmail';
+        $(function () {
+            $(".phone").blur(function () {
+                var phone = $(".phone").val();
+                $.ajax({
+                    url:U_FIND_BY_NAME_URL,
+                    type:'get',
+                    dataType:'json',
+                    data:"username="+phone,
+                    async:false,
+                    success:function (result) {
+                        if (result.status === 200){
+                            $(".phone").after(
+                                $("<br>"),
+                                $("<span class='Validform_checktip Validform_wrong'>").text("该用户已被注册")
+                            )
+                        }
+                    }
+                })
+            });
+            $(".email").blur(function () {
+                var email = $(".email").val();
+                $.ajax({
+                    url:E_FIND_BY_NAME_URL,
+                    type:'get',
+                    dataType:'json',
+                    data:"mEmail="+email,
+                    async:false,
+                    success:function (result) {
+                        if (result.status === 200){
+                            $(".email").after(
+                                $("<br>"),
+                                $("<span class='Validform_checktip Validform_wrong'>").text("该邮箱已被注册")
+                            )
+                        }
+                    }
+                })
+            })
+        });
+        function submitForm1() {
+            var phone = $(".phone").val();
+            var password = $(".password").val();
+            var repassword = $(".repassword").val();
+            var sex = $(".sex").val();
+            var location = $(".location").val();
+
+            if (phone === "" || password === "" || repassword ==="" ||location===""){
+                return false;
+            } else {
+                    let data = {
+                        username:phone,
+                        password:password,
+                        sex:sex,
+                        addrs:location
+                    };
+                    $.getJSON(USER_REGISTER_URL,data,function (results) {
+                        if (results.data === 1){
+                            alert("注册成功");
+                            window.location.href = 'login.html'
+                        }
+                    })
+            }
+            return false
+        }
+        function submitForm2(){
+            var name = $(".mName").val();
+            var email = $(".email").val();
+            var password2 = $(".password2").val();
+            var repassword2 = $(".repassword2").val();
+            var addr = $(".addr").val();
+            if (name === "" || email === "" || password2 ==="" || repassword2 === "" ||addr===""){
+                return false;
+            }else {
+                let data = {
+                    mName:name,
+                    mEmail:email,
+                    password:password2,
+                    location:addr
+                };
+                $.post(ENTERPRISE__REGISTER_URL,data,function (results) {
+                    if (results.data === 1){
+                        alert("注册成功");
+                        location.href = 'login.html';
+                    }
+                },'json')
+            }
+            return false
+        }
+        $(function () {
+            $("#register-form").Validform({//给form表单取个id吧
+                tiptype:3,//1,2,3呈现不同效果，可以自行尝试，当然3是最好
+                showAllError:true,//全部显示错误提示，默认就行
+            });
+            $("#register-form2").Validform({//给form表单取个id吧
+                tiptype:3,//1,2,3呈现不同效果，可以自行尝试，当然3是最好
+                showAllError:true,//全部显示错误提示，默认就行
+            });
+        });
+
+    </script>
+    <style>
+        a{
+            cursor: pointer;
+        }
+        .container-fluid{width: 100%;height: 469px;background: #ffffff}
+        .container-fluid .content-container{width: 990px;height: 469px;margin-left: 150px}
+        .container-fluid .content-container .login-img{width: 560px;height: 419px;margin-top: 50px;float: left}
+        .container-fluid .content-container .register{width: 350px;height: auto;margin-top: 50px; border:1px solid #c5c3bc;float: right}
+
+        #myTab li{
+            width: 175px;
+        }
+        #myTab li a{
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .only{
+            /*float: right;*/
+            font-family: 微软雅黑,serif;
+            font-weight: bold;
+        }
+
+        /*.myTable tbody tr td input{*/
+        /*    !*input框的字体右移*!*/
+        /*    !*text-indent: 10px;*!*/
+        /*    */
+        /*}*/
+        .myTable tbody tr{
+            transform: translateX(30px);
+        }
+        .btn{
+            margin-top: 20px;
+            transform: translateX(70px);
+            width: 220px;
+        }
+        table tr td{
+            padding-top: 15px;
+        }
+        /*底部*/
+        .navbar{
+            width: 100%;
+            border-top: 1px solid #c5c3bc;
+        }
+        .footer{
+            width: 100%;
+            height: 81px;
+
+            /*transform: translateY(100px);*/
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        .footer .footer-ul{margin-left: 10%}
+        .footer .driver{width: 20px}
+        .footer .ali{padding-top: 20px;color: #093807;transform: translateX(350px)}
+    </style>
+<!--    表单验证-->
+    <style>
+        .Validform_wrong{
+            color: red;
+        }
+        .Validform_right{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="content-container">
+        <div class="login-img">
+            <img src="image/login.jpg" alt="" height="414" width="512">
+        </div>
+        <div class="register">
+
+                <ul id="myTab" class="nav nav-tabs ">
+                    <li class="active">
+                        <a href="#personnel" data-toggle="tab">用户注册</a>
+                    </li>
+                    <li><a href="#enterprise" data-toggle="tab">企业注册</a></li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div id="personnel" class="tab-pane fade in active" >
+                        <form id="register-form" action="" onsubmit="return submitForm1()">
+                        <table class="myTable">
+                            <tbody>
+                                <tr>
+                                    <td><label class="only">用&nbsp;户&nbsp;名：</label></td>
+                                    <td>
+                                        <input type="text" class="phone" name="phone"   placeholder="手机号" datatype="m" nullmsg="用户名不能为空" errormsg="请输入正确的手机号！"><br>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td><label class="only">密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码：</label></td>
+                                    <td>
+                                        <input type="password"   name="password" placeholder="密码" nullmsg="密码不能为空" class="password" datatype="*6-15" errormsg="密码范围在6~15位之间！"><br>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label class="only">确认密码：</label></td>
+                                    <td><input type="password" class="repassword" name="repassword"  placeholder="请再次输入密码" datatype="*" nullmsg="确认密码不能为空" recheck="password" errormsg="您两次输入的账号密码不一致！"><br></td>
+                                </tr>
+                                <tr>
+                                    <td><label  class="only">性&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别：</label></td>
+                                    <td><select name="sex" class="sex"  >
+                                        <option value="男">男</option>
+                                        <option value="女">女</option>
+                                    </select></td>
+                                </tr>
+                                <tr>
+                                    <td><label class="only" >地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址：</label></td>
+                                    <td><input type="text" class="location" name="location"  datatype="*" nullmsg="地址不能为空"  placeholder="地址"><br></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn  btn-info" type="submit" id="register_1">注册</button>
+                            <a href="login.html" style="float: right;margin-right: 35px;text-decoration: none">已有账号？去登陆</a>
+                        </form>
+                    </div>
+                    <div id="enterprise" class="tab-pane fade" >
+                        <form id="register-form2" action="" onsubmit="return submitForm2()" method="post">
+                        <table class="myTable">
+                            <tbody>
+                            <tr>
+                                <td><label class="only">会&nbsp;员&nbsp;名：</label></td>
+                                <td><input type="text" name="mName" class="mName"  placeholder="公司简称" datatype="*4-18" nullmsg="公司简称不能为空" errormsg="名称不能少于5个字符，大于18个字符"><br>
+                            </tr>
+                            <tr>
+                                <td><label class="only">用&nbsp;户&nbsp;名：</label></td>
+                                <td><input type="email" name="email" class="email" placeholder="email" datatype="e" nullmsg="邮箱不能为空" errormsg="邮箱格式不正确"><br></td>
+                            </tr>
+                            <tr>
+                                <td><label class="only">密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码：</label></td>
+                                <td><input type="password"  name="password" class="password2" id="password" placeholder="密码" nullmsg="密码不能为空"  datatype="*6-15" errormsg="密码范围在6~15位之间！"><br></td>
+                            </tr>
+                            <tr>
+                                <td><label class="only">确认密码：</label></td>
+                                <td><input type="password" name="repassword" class="repassword2"  placeholder="请再次输入密码" datatype="*" nullmsg="确认密码不能为空" recheck="password" errormsg="您两次输入的账号密码不一致！"><br></td>
+                            </tr>
+                            <tr>
+                                <td><label class="only">公司地址：</label></td>
+                                <td><input type="text" name="location" class="addr" placeholder="公司地址" datatype="*" nullmsg="地址不能为空"><br></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn  btn-info" type="submit" id="register_2">注册</button>
+                            <a href="login.html" style="float: right;margin-right: 35px;text-decoration: none">已有账号？去登陆</a>
+
+                        </form>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="container">
+                <footer class="footer">
+                    <ul class="footer-ul">
+                        <li><a href="">xxx集团:</a></li>
+                        <li>&nbsp;&nbsp;&nbsp;xxx网络
+                            <a href="">-中国站</a>
+                            <a href="">国际站</a>
+                            <a href="">全球速卖通</a>
+                        </li>
+                        <li class="driver">|</li>
+                        <li><a href="">淘宝网&nbsp;</a></li>
+                        <li class="driver">|</li>
+                        <li><a href="">天猫&nbsp;</a></li>
+                        <li class="driver">|</li>
+                        <li><a href="">聚划算&nbsp;</a></li>
+                        <li class="driver">|</li>
+                        <li><a href="">阿里云&nbsp;</a></li>
+                        <li class="driver">|</li>
+                        <li><a href="">中国雅虎&nbsp;</a></li>
+                        <li class="driver">|</li>
+                        <li><a href="">支付宝&nbsp;</a></li>
+                        <div class="clear"></div>
+                    </ul>
+                    <ul>
+                        <li class="ali">©2014 xxx集团 版权所有</li>
+                    </ul>
+                </footer>
+        </div>
+    </nav>
+</div>
+</body>
+</html>

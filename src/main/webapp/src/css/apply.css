@@ -1,0 +1,85 @@
+/*鼠标移入变成小手形*/
+a:hover{
+    cursor:pointer
+}
+header{width: 100%;height: 52px;background: #2c2f33}
+header .top{width: 1226px;height: 52px;line-height: 52px;}
+header .top a{text-decoration: none}
+header .top .left{margin-left: 100px}
+header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+header .top .left ul li a:hover{color: rgb(255,103,0); }
+header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+header .top .right ul li a:hover{color:#fff;}
+header .top .right .gouwuche a{color:#fff;}
+*{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+.center{margin: 0 auto;}
+.fl{float: left;}
+.fr{float: right;}
+.clear{clear:both;}
+
+/*内容*/
+.main-box{
+    width: 1000px;
+    height: auto;
+    margin-left: 175.5px;
+}
+.main-category{
+    height: 50px;
+    border-bottom:1px solid #ff9900;
+}
+.main-category .resume{
+    float: right;
+    margin-top: 30px;
+    font-family: 微软雅黑,serif;
+    color: #3e79ff;
+    font-weight: bold;
+}
+.main-category ul li{
+    float: left;
+    margin-top: 30px;
+    padding-left: 10px;
+    padding-top: 4px;
+    border: 1px solid #E4E4E4;
+    background: #f9f9f9;
+    height: 27px;
+    width: 76px;
+    font-family: 微软雅黑,serif;
+}
+.current{
+    margin-left: 15px;
+    margin-right: 15px;
+    background: #ff9900;
+
+}
+.main-category a{
+    text-decoration: none;
+}
+.content-list{
+    transform: translateY(20px);
+    height: auto;
+}
+.table thead{
+    border-top: 1px solid #E4E4E4;
+    background: #f9f9f9;
+}
+.table tbody tr:hover{
+    background: #dbddff;
+}
+.table .body tr a{
+    text-decoration: none;
+}
+/*底部*/
+.footer-list{
+    width: 100%;
+    height: 81px;
+    border-top: 1px solid #c5c3bc;
+    /*transform: translateY(-40px);*/
+}
+footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+.footer-list .footer-ul{margin-left: 23%}
+.footer-list .driver{width: 20px}
+.footer-list .ali{transform: translateX(650px);color: #093807;font-family: 微软雅黑,serif}

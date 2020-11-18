@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>职位申请</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/apply.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                sessionStorage.clear();
+                location.href = 'position.html'
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.removeAttr("href");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'favorite.html'
+                })
+            }
+            let USER_VO_URL = 'http://localhost:8080/Page_war/user/findById';
+            let data = {
+                uId:sessionStorage.getItem("uId")
+            };
+            $.getJSON(USER_VO_URL,data,function (results) {
+                if (results.status === 200 && results.data!=='undefined') {
+                    sessionStorage.setItem("uInfoId",results.data.userInfo.uInfoId)
+                }
+            });
+            if (sessionStorage.getItem("uInfoId")!== 'undefined' ){
+                $(".resume").text("+ 预览简历")
+            }
+            $(".resume").click(function () {
+                if (sessionStorage.getItem("uInfoId") !== 'undefined') {
+                    window.location.href = 'resumeInfo.html';
+                }else {
+                    window.location.href = 'personal_center.html'
+                }
+            })
+        })
+    </script>
+    <script>
+        $(function () {
+            let findByUid_URL =  'http://localhost:8080/Page_war/apply/queryApply';
+            let data = {
+                uId:sessionStorage.getItem("uId")
+            };
+            $.getJSON(findByUid_URL,data,function (results) {
+                if (results.status === 200){
+                    if (results.data.length === 0) {
+                        $(".body").append(
+                            $("<div class='no-data' style='transform: translateX(400px);margin-top: 30px;margin-bottom: 30px'>").append(
+                                $("<span>").html("亲，没有搜索到相关应聘职位！")
+                            )
+                        )
+                    }
+                    for (const result of results.data) {
+                            for (const position of result.positionList) {
+                                $(".body").append(
+                                    $("<tr>").append(
+                                        $("<td>").append(
+                                            $("<span>").append(
+                                                $("<a style='color: #1a38ff;font-size: 14px;font-weight: bolder;margin-left: 5px'>").attr("href","position_detail.html?pId="+position.pId).text(position.positionName)
+                                            )
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.departmentName)
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.positionType)
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.workPosition)
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(result.crtTime.split(" ")[0])
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").html("新投递")
+                                        ),
+                                        $("<td>").append(
+                                            $("<a class='delete' onclick='deletePosition(this)' style='color: #296aff'>").html("取消申请").attr("pId",position.pId),
+                                        ),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+            })
+        });
+        function deletePosition(obj) {
+            let delete_url = 'http://localhost:8080/Page_war/apply/deleteApply';
+            let updateFlag = "http://localhost:8080/Page_war/collection/updateFlag";
+
+            let data = {
+                uId:sessionStorage.getItem("uId"),
+                pId:$(obj).attr("pId")
+            };
+            console.log(data);
+            $.getJSON(delete_url,data,function (results) {
+                if (results.data === 1){
+                    $(obj).parent().parent().remove();
+                    let c_data = {
+                        flag:0,
+                        uid:sessionStorage.getItem("uId"),
+                        pId:$(obj).attr("pId")
+                    };
+                    $.post(updateFlag,c_data,function (result) {
+                        if (result.data === 1) {
+                        }
+                    },'json');
+                    $.post()
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<header>
+    <div class="top center">
+        <div class="left fl">
+            <ul>
+<!--                <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                <li><a href="">|</a></li>-->
+                <li><a href="">社招官网</a></li>
+                <li><a href="index.html">首页&nbsp;</a></li>
+                <li><a href="position.html">社会招聘&nbsp;</a></li>
+                <li><a href="">校园招聘&nbsp;</a></li>
+                <li><a href="login.html">企业服务&nbsp;</a></li>
+                <li><a href="apply.html">个人中心&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+        </div>
+        <div class="right fr">
+            <div class="fr">
+                <ul>
+                    <li><a>欢迎来到xxx公司</a></li>
+                    <li><a href="./login.html" class="login" >登录</a></li>
+                    <li>|</li>
+                    <li><a href="./register.html" class="register">注册</a></li>
+                    <li>|</li>
+                    <li><a href="">消息通知</a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+    </div>
+</header>
+<div class="main-box">
+    <div class="main-category">
+        <a class="resume" href="resumeInfo.html">+ 创建简历</a>
+        <ul>
+            <li class="current"  style="background: #ff9900"><a style="color: #ffffff">我的申请</a></li>
+            <li><a href="favorite.html">我的收藏</a></li>
+            <li style="margin-left: 15px"><a href="resumeScan.html">个人资料</a></li>
+        </ul>
+    </div>
+    <div class="content-list">
+        <table class="table">
+            <thead>
+            <tr>
+                <th width="280"><span>职位名称</span></th>
+                <th width="260"><span>所属部门</span></th>
+                <th><span>职位类别</span></th>
+                <th><span>工作地点</span></th>
+                <th><span>投递时间</span></th>
+                <th><span>当前进度</span></th>
+                <th width="100"><span>操作</span></th>
+            </tr>
+            </thead>
+            <tbody class="body">
+
+            </tbody>
+        </table>
+    </div>
+</div>
+<footer class="footer-list">
+    <ul class="footer-ul">
+        <li><a href="">xxx集团:</a></li>
+        <li>&nbsp;&nbsp;&nbsp;xxx网络
+            <a href="">-中国站</a>
+            <a href="">国际站</a>
+            <a href="">全球速卖通</a>
+        </li>
+        <li class="driver">|</li>
+        <li><a href="">淘宝网&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">天猫&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">聚划算&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">阿里云&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">中国雅虎&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">支付宝&nbsp;</a></li>
+        <div class="clear"></div>
+    </ul>
+    <ul>
+        <li class="ali">©2014 xxx集团 版权所有</li>
+    </ul>
+</footer>
+</body>
+</html>

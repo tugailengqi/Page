@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>我的收藏</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                alert("请先登录");
+                location.href = 'login.html';
+                // $login.html("登录");
+                // $register.html("注册")
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'position.html'
+                });
+                let USER_VO_URL = 'http://localhost:8080/Page_war/user/findById';
+                 let data = {
+                        uId:sessionStorage.getItem("uId")
+                    };
+                $.getJSON(USER_VO_URL,data,function (results) {
+                        if (results.status === 200 && results.data!=='undefined') {
+                            sessionStorage.setItem("uInfoId",results.data.userInfo.uInfoId)
+                        }
+                });
+                if (sessionStorage.getItem("uInfoId")!== 'undefined' ){
+                    $(".resume").text("+ 预览简历")
+                }
+                $(".resume").click(function () {
+                    if (sessionStorage.getItem("uInfoId") !== 'undefined') {
+                        window.location.href = 'resumeInfo.html';
+                    }else {
+                        window.location.href = 'personal_center.html'
+                    }
+                })
+            }
+
+        })
+    </script>
+    <script>
+        $(function () {
+            let findByUid_URL =  'http://localhost:8080/Page_war/collection/findCollByUid';
+            let data = {
+                uId:sessionStorage.getItem("uId")
+            };
+            $.getJSON(findByUid_URL,data,function (results) {
+                if (results.status === 200){
+                    if (results.data.length === 0) {
+                        $(".body").append(
+                            $("<div class='no-data' style='transform: translateX(400px);margin-top: 30px;margin-bottom: 30px'>").append(
+                                $("<span>").html("亲，暂时没有收藏的职位！")
+                            )
+                        )
+                    }
+                    for (const result of results.data) {
+                            for (const position of result.positionList) {
+                                $(".body").append(
+                                    $("<tr>").append(
+                                        $("<td>").append(
+                                            $("<span>").append(
+                                                $("<a style='color: #1a38ff;font-size: 14px;font-weight: bolder;margin-left: 5px'>").attr("href","position_detail.html?pId="+position.pId).text(position.positionName)
+                                            )
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.departmentName)
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.positionType)
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.workPosition)
+                                        ),
+                                        $("<td>").append(
+                                            $("<span>").text(position.publicTime)
+                                        ),
+                                        result.cFlag ===0 ? $("<td>").append(
+                                            $("<span class='job'>").html("未申请")
+                                        ):$("<td>").append(
+                                            $("<span class='jop'>").html("已申请"),
+                                        ),
+                                        $("<td>").append(
+                                            $("<a onclick='apply(this)' id='apply' style='color: #296aff'>").html("申请&nbsp;").attr("pId",position.pId).attr("mid",position.mId),
+                                            $("<a class='delete' onclick='deletePosition(this)' style='color: #296aff'>").html("移除").attr("pId",position.pId),
+                                        ),
+                                    ),
+                                )
+                            }
+                    }
+                 }
+            })
+        });
+        function deletePosition(obj) {
+            let delete_url = 'http://localhost:8080/Page_war/collection/deleteCollection';
+            let data = {
+                uId:sessionStorage.getItem("uId"),
+                pId:$(obj).attr("pId")
+            };
+            console.log(data);
+            $.getJSON(delete_url,data,function (results) {
+                if (results.data === 1){
+                    $(obj).parent().parent().remove();
+                }
+            })
+        }
+        function apply(obj) {
+            let  APPLY_URL = 'http://localhost:8080/Page_war/apply/insertApply';
+            let data = {
+                uId:sessionStorage.getItem("uId"),
+                pId:$(obj).attr("pId"),
+                mId:$(obj).attr("mid")
+            };
+            $.getJSON(APPLY_URL,data,function (results) {
+                if (results.data === 1){
+                    let updateFlag = "http://localhost:8080/Page_war/collection/updateFlag";
+                    let f_data = {
+                      flag:1,
+                      uid:sessionStorage.getItem("uId"),
+                      pId:$(obj).attr("pId"),
+                    };
+                    $.post(updateFlag,f_data,function (result) {
+                        if (result.data === 1) {
+                            console.log("成功")
+                        }
+                    },'json');
+                    alert("申请成功");
+                    $(obj).parent().prev().text("已申请")
+                }else {
+                    alert("申请失败")
+                }
+            })
+        }
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer
+        }
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*内容*/
+        .main-box{
+            width: 1000px;
+            height: auto;
+            margin-left: 175.5px;
+        }
+        .main-category{
+            height: 50px;
+            border-bottom:1px solid #ff9900;
+        }
+        .main-category .resume{
+            float: right;
+            margin-top: 30px;
+            font-family: 微软雅黑,serif;
+            color: #3e79ff;
+            font-weight: bold;
+        }
+        .main-category ul li{
+            float: left;
+            margin-top: 30px;
+            padding-left: 10px;
+            padding-top: 4px;
+            border: 1px solid #E4E4E4;
+            background: #f9f9f9;
+            height: 27px;
+            width: 76px;
+            font-family: 微软雅黑,serif;
+        }
+        .current{
+            margin-left: 15px;
+            margin-right: 15px;
+            background: #ff9900;
+
+        }
+        .main-category a{
+            text-decoration: none;
+        }
+        .content-list{
+            transform: translateY(20px);
+            height: auto;
+        }
+        .table thead{
+            border-top: 1px solid #E4E4E4;
+            background: #f9f9f9;
+        }
+        .table tbody tr:hover{
+            background: #dbddff;
+        }
+        .table .body tr a{
+            text-decoration: none;
+        }
+        /*底部*/
+        .footer-list{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer-list .footer-ul{margin-left: 23%}
+        .footer-list .driver{width: 20px}
+        .footer-list .ali{transform: translateX(650px);color: #093807;font-family: 微软雅黑,serif}
+    </style>
+</head>
+<body>
+
+<header>
+            <div class="top center">
+                <div class="left fl">
+                    <ul>
+<!--                        <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                        <li><a href="">|</a></li>-->
+                        <li><a href="">社招官网</a></li>
+                        <li><a href="index.html">首页&nbsp;</a></li>
+                        <li><a href="position.html">社会招聘&nbsp;</a></li>
+                        <li><a href="">校园招聘&nbsp;</a></li>
+                        <li><a href="login.html">企业服务&nbsp;</a></li>
+                        <li><a href="favorite.html">个人中心&nbsp;</a></li>
+                        <div class="clear"></div>
+                    </ul>
+                </div>
+                <div class="right fr">
+                    <div class="fr">
+                        <ul>
+                            <li><a>欢迎来到xxx公司</a></li>
+                            <li><a href="./login.html" class="login" >登录</a></li>
+                            <li>|</li>
+                            <li><a class="register">注册</a></li>
+                            <li>|</li>
+                            <li><a href="">消息通知</a></li>
+                        </ul>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </header>
+<div class="main-box">
+    <div class="main-category">
+        <a class="resume">+ 创建简历</a>
+        <ul>
+            <li><a href="apply.html">我的申请</a></li>
+            <li class="current"  style="background: #ff9900"><a style="color: #ffffff">我的收藏</a></li>
+            <li><a href="resumeScan.html">个人资料</a></li>
+        </ul>
+    </div>
+    <div class="content-list">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="280"><span>职位名称</span></th>
+                    <th width="260"><span>所属部门</span></th>
+                    <th><span>职位类别</span></th>
+                    <th><span>工作地点</span></th>
+                    <th><span>更新时间</span></th>
+                    <th><span>当前状态</span></th>
+                    <th width="100"><span>操作</span></th>
+                </tr>
+            </thead>
+            <tbody class="body">
+
+            </tbody>
+        </table>
+    </div>
+</div>
+<footer class="footer-list">
+    <ul class="footer-ul">
+        <li><a href="">xxx集团:</a></li>
+        <li>&nbsp;&nbsp;&nbsp;xxx网络
+            <a href="">-中国站</a>
+            <a href="">国际站</a>
+            <a href="">全球速卖通</a>
+        </li>
+        <li class="driver">|</li>
+        <li><a href="">淘宝网&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">天猫&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">聚划算&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">阿里云&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">中国雅虎&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">支付宝&nbsp;</a></li>
+        <div class="clear"></div>
+    </ul>
+    <ul>
+        <li class="ali">©2014 xxx集团 版权所有</li>
+    </ul>
+</footer>
+</body>
+</html>

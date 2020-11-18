@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>职位详情</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                $login.html("登录");
+                $register.html("注册")
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.removeAttr("href");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'position_detail.html'
+                })
+            }
+        })
+    </script>
+    <script>
+        $(function () {
+            let ID_URL = 'http://localhost:8080/Page_war/position/findById';
+            let findByUid_URL = 'http://localhost:8080/Page_war/collection/findCollByUid';
+            let APPLY_FIND_ID_URL = 'http://localhost:8080/Page_war/apply/queryApply';
+            ID_URL += location.search;
+            $.getJSON(ID_URL,function (results) {
+                if (results.status === 200){
+                    $(".title").text(results.data.positionName)
+                        $(".detail-table").append(
+                            $("<tbody>").append(
+                                $("<tr>").append(
+                                    $("<td width='15%'>").text("发布时间："),
+                                    $("<td width='30%'>").text(results.data.publicTime),
+                                    $("<td width='15%'>").text("工作地点："),
+                                    $("<td width='15%'>").text(results.data.workPosition),
+                                    $("<td width='15%'>").text("工作年限："),
+                                    $("<td width='10%'>").text(results.data.workExperience)
+                                ),
+                                $("<tr>").append(
+                                    $("<td>").text("所属部门："),
+                                    $("<td>").text(results.data.departmentName),
+                                    $("<td>").text("学历："),
+                                    $("<td>").text(results.data.degree),
+                                    $("<td>").text("招聘人数："),
+                                    $("<td>").text("若干")
+                                )
+                            )
+                        );
+                        $(".detail-title").after(
+                            $("<p class='detail-content'>").html(results.data.responsibility)
+                        );
+                        $(".detail-require").after(
+                            $("<p class='require'>").text(results.data.require)
+                        );
+                        $(".collection").attr("pId1",results.data.pId);
+                        $(".apply").attr("pId2",results.data.pId)
+                    }
+            });
+            let user = {
+                uId: sessionStorage.getItem("uId")
+            };
+            $.getJSON(findByUid_URL,user,function (success) {
+                if (success.status === 200){
+                    for (const list of success.data) {
+                        for (const position of list.positionList) {
+                            if (position.pId===$(".collection").attr("pId1")){
+                                let $input = $("input[pId1="+position.pId+"]");
+                                $input.attr({"disabled":"disabled"});
+                                $input.val("已收藏");
+                                $input.addClass("btn_disable");
+                            }
+                        }
+                    }
+                }
+            });
+            $.getJSON(APPLY_FIND_ID_URL,user,function (success) {
+                if (success.status === 200){
+                    for (const list of success.data) {
+                            if (list.pId===$(".apply").attr("pId2")){
+                                let $input = $("input[pId2="+list.pId+"]");
+                                $input.attr({"disabled":"disabled"});
+                                $input.val("已申请");
+                                $input.addClass("btn_disable");
+                            }
+                    }
+                }
+            })
+        });
+        function collection(obj) {
+            $uid = sessionStorage.getItem("uId");
+            let  COLLECTION_URL = 'http://localhost:8080/Page_war/collection/addCollection';
+            let $pId = $(obj).attr("pId1");
+            let data = {
+                uId:$uid,
+                pId:$pId
+            };
+            if ($uid === null){
+                alert("请先登录");
+                location.href = 'login.html';
+            }
+            $.getJSON(COLLECTION_URL,data,function (results) {
+                if (results.data === 1){
+                    alert("收藏成功");
+                    $(obj).val("已收藏");
+                    $(obj).attr({"disabled":"disabled"});
+                    $(obj).addClass("btn_disable");
+                }
+            })
+        }
+
+        function apply(obj) {
+            $uid = sessionStorage.getItem("uId");
+            let  APPLY_URL = 'http://localhost:8080/Page_war/apply/insertApply';
+            let $pId = $(obj).attr("pId2");
+            let data = {
+                uId:$uid,
+                pId:$pId
+            };
+            if ($uid === null){
+                alert("请先登录");
+                location.href = 'login.html';
+            }
+            $.getJSON(APPLY_URL,data,function (results) {
+                if (results.data === 1){
+                    alert("申请成功");
+                    $(obj).val("已申请");
+                    $(obj).attr({"disabled":"disabled"});
+                    $(obj).addClass("btn_disable");
+                }
+            })
+        }
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer
+        }
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*内容*/
+        .main-content{
+            width: 760px;
+            height: 665px;
+            border: 1px solid #c5c3bc;
+            transform: translateX(35%);
+            margin-top: 10px;
+        }
+        .main-content .title{
+            height: 30px;
+            line-height: 30px;
+            padding-left: 10px;
+            border-bottom: 1px solid #E4E4E4;
+            color: #666666;
+            font-size: 16px;
+            transform: translateY(-20px);
+            background: #f9f9f9;
+        }
+        .detail-box{
+            /*transform: translateY(-30px);*/
+        }
+        .detail-table{
+            width: 678px;
+            margin-left: 30px;
+            border: 1px solid #E4E4E4
+        }
+        .detail-table tr{
+            height: 35px;
+        }
+        .detail-title {
+            color: #e87502;
+            font-weight: bold;
+            font-size: 14px;
+            margin-left: 30px;
+            margin-top: 30px;
+        }
+        .detail-content{
+            margin-left: 30px;
+            font-size: 13px;
+            line-height: 21px;
+            font-family: 微软雅黑,serif;
+            letter-spacing:2px;
+        }
+        .detail-require {
+            color: #e87502;
+            font-weight: bold;
+            font-size: 14px;
+            margin-left: 30px;
+            margin-top: 30px;
+        }
+        .require{
+            margin-left: 30px;
+            font-size: 13px;
+            line-height: 21px;
+            font-family: 微软雅黑,serif;
+            letter-spacing:2px;
+        }
+        .main-box .main-content .detail-box .apply{
+            background: #e87502;
+            color: #FFFFFF;
+            height: 31px;
+            width: 80px;
+            margin-left: 20px;
+            font-family: 黑体,serif;
+            font-weight: bold;
+            border: 2px solid #ff7512;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+        .main-box .main-content .detail-box .collection{
+            background: #296aff;
+            color: #FFFFFF;
+            height: 31px;
+            width: 80px;
+            margin-left: 10px;
+            font-family: 黑体,serif;
+            font-weight: bold;
+            border: 2px solid #296aff;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        /* 以下是CSS样式代码，具体样式按自己需求写 */
+        .main-box .main-content .detail-box .btn_disable{
+            background: #d4d4d4;
+            color: #ffffff;
+            height: 31px;
+            width: 80px;
+            margin-left: 10px;
+            font-family: 黑体,serif;
+            font-weight: bold;
+            border: 2px solid #d4d4d4;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+        /*底部*/
+        .footer-list{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer-list .footer-ul{margin-left: 23%}
+        .footer-list .driver{width: 20px}
+        .footer-list .ali{transform: translateX(650px);color: #093807;font-family: 微软雅黑,serif}
+    </style>
+</head>
+<body>
+<div>
+    <header>
+        <div class="top center">
+            <div class="left fl">
+                <ul>
+<!--                    <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                    <li><a href="">|</a></li>-->
+                    <li><a href="">社招官网</a></li>
+                    <li><a href="index.html">首页&nbsp;</a></li>
+                    <li><a href="position.html">社会招聘&nbsp;</a></li>
+                    <li><a href="">校园招聘&nbsp;</a></li>
+                    <li><a href="">了解阿里&nbsp;</a></li>
+                    <li><a href="favorite.html">个人中心&nbsp;</a></li>
+                    <div class="clear"></div>
+                </ul>
+            </div>
+            <div class="right fr">
+                <div class="fr">
+                    <ul>
+                        <li><a>欢迎来到xxx公司</a></li>
+                        <li><a href="./login.html" class="login" >登录</a></li>
+                        <li>|</li>
+                        <li><a href="./register.html" class="register">注册</a></li>
+                        <li>|</li>
+                        <li><a href="">消息通知</a></li>
+                    </ul>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </header>
+    <div class="main-box">
+        <div class="main-content">
+            <h3 class="title">标题</h3>
+            <div class="detail-box" style="word-wrap: break-word;height: 632px">
+                <table class="detail-table" border="1px">
+                    <tbody>
+
+                    </tbody>
+                </table>
+                <h4 class="detail-title">岗位描述：</h4>
+                <h4 class="detail-require">岗位需求</h4>
+                <input class='apply' onclick="apply(this)" type='button' value='申请岗位'>
+                <input class='collection' onclick="collection(this)" type='button' value='收藏岗位'>
+            </div>
+        </div>
+    </div>
+    <footer class="footer-list">
+        <ul class="footer-ul">
+            <li><a href="">xxx集团:</a></li>
+            <li>&nbsp;&nbsp;&nbsp;xxx网络
+                <a href="">-中国站</a>
+                <a href="">国际站</a>
+                <a href="">全球速卖通</a>
+            </li>
+            <li class="driver">|</li>
+            <li><a href="">淘宝网&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">天猫&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">聚划算&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">阿里云&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">中国雅虎&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">支付宝&nbsp;</a></li>
+            <div class="clear"></div>
+        </ul>
+        <ul>
+            <li class="ali">©2014 xxx集团 版权所有</li>
+        </ul>
+    </footer>
+</div>
+</body>
+</html>

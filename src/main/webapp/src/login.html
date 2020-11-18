@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link href="font-awesome-4.7.0/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+    <script src="js/jquery.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script>
+        let LOGIN_URL = 'http://localhost:8080/Page_war/user/login';
+        let LOGIN_enterprise_URL = 'http://localhost:8080/Page_war/enterprise/login';
+        $(function () {
+
+            $("#login").click(function () {
+                let name = $("#username").val();
+                if (name === null || name === "") {
+                    $(".username-error").css("display","block")
+                }
+                let pass = $("#password").val();
+                if (pass === null || pass === ""){
+                    $(".password-error").css("display","block")
+                }
+                let data = {
+                    username:name,
+                    password:pass
+                };
+                $.getJSON(LOGIN_URL,data,function (results) {
+                    if (results.status === 200 && results.data !== null){
+                        sessionStorage.setItem("username",results.data.username);
+                        sessionStorage.setItem("uId",results.data.uId);
+                        window.location.href = 'position.html'
+                    }else {
+                        alert("用户名或密码错误")
+                    }
+                })
+            });
+            $("#login2").click(function () {
+                let name = $("#username2").val();
+                if (name === null || name === "") {
+                    $(".username-error").css("display","block")
+                }
+                let pass = $("#password2").val();
+                if (pass === null || pass === ""){
+                    $(".password-error").css("display","block")
+                }
+                let email = $("#email").val();
+                if (email === null || email === ""){
+                    $(".email-error").css("display","block")
+                }
+                let data = {
+                    mName:name,
+                    mEmail:email,
+                    password:pass
+                };
+                $.getJSON(LOGIN_enterprise_URL,data,function (results) {
+                    if (results.status === 200){
+                        sessionStorage.setItem("email",results.data.mEmail);
+                        sessionStorage.setItem("mId",results.data.mId);
+                        window.location.href = 'enterprise_index.html'
+                    }
+                })
+            });
+
+            let $username = $("#username");
+            let $password = $("#password");
+            $username.blur(function () {
+                if ($username.val() === null || $username.val()===""){
+                    $(".username-error").css("display","block")
+                }
+            });
+            $username.focus(function () {
+                    $(".username-error").css("display","none")
+            });
+            $password.blur(function () {
+                if ($password.val() === null || $password.val()===""){
+                    $(".password-error").css("display","block")
+                }
+            });
+            $password.focus(function () {
+                $(".password-error").css("display","none")
+            });
+
+            let $username2 = $("#username2");
+            let $password2 = $("#password2");
+            let $email = $("#email");
+            $username2.blur(function () {
+                if ($username2.val() === null || $username2.val()===""){
+                    $(".username-error").css("display","block")
+                }
+            });
+            $username2.focus(function () {
+                $(".username-error").css("display","none")
+            });
+            $password2.blur(function () {
+                if ($password2.val() === null || $password2.val()===""){
+                    $(".password-error").css("display","block")
+                }
+            });
+            $password2.focus(function () {
+                $(".password-error").css("display","none")
+            });
+            $email.blur(function () {
+                if ($email.val() === null || $email.val()===""){
+                    $(".email-error").css("display","block")
+                }
+            });
+            $email.focus(function () {
+                $(".email-error").css("display","none")
+            })
+        })
+    </script>
+
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="content-container">
+            <div class="login-img">
+                <img src="image/login.jpg" alt="" height="414" width="512">
+            </div>
+            <div class="login">
+                <div class="login-iframe">
+                    <form method="post" action="" class="form center">
+                        <ul id="myTab" class="nav nav-tabs ">
+                            <li class="active">
+                                <a href="#personnel" data-toggle="tab">用户登录</a>
+                            </li>
+                            <li><a href="#enterprise" data-toggle="tab">企业会员</a></li>
+                        </ul>
+                        <div id="myTabContent" class="tab-content">
+                            <div id="personnel" class="tab-pane fade in active" >
+                                <label class="text username">登&nbsp;录&nbsp;名:</label>
+                                <div class="login-input"><input class="shurukuang" type="text" name="username" id="username" placeholder="手机/邮箱/会员名"></div>
+                            <label class="text username-error" style="display: none"><i class="fa fa-close"></i>用户名不能为空</label>
+                            <label class="text password">登录密码:<a style="margin-left:80px;text-decoration: none">忘记登录密码？</a></label>
+                            <div class="login-input"><input class="shurukuang" type="password" name="password" id="password" placeholder="登录密码"></div>
+                            <label class="text password-error" style="display: none"><i class="fa fa-close"></i>密码不能为空</label>
+                            <div class="login_submit">
+                                <input class="submit" type="button" name="submit" id="login" value="登录" >
+                            </div>
+                            <div class="other">
+                                <a href="register.html" style="float: right;margin-right: 35px;text-decoration: none">没有账号？免费注册</a>
+                            </div>
+                            </div>
+                                <div id="enterprise" class="tab-pane fade" >
+                                    <label class="text username">会&nbsp;员&nbsp;名:</label>
+                                    <div class="login-input"><input class="shurukuang" type="text" name="username" id="username2" placeholder="会员名/公司简称"></div>
+                                    <label class="text username-error" style="display: none"><i class="fa fa-close"></i>用户名不能为空</label>
+                                    <label class="text username">用&nbsp;户&nbsp;名:</label>
+                                    <div class="login-input"><input class="shurukuang" type="text" name="email" id="email" placeholder="邮箱"></div>
+                                    <label class="text email-error" style="display: none"><i class="fa fa-close"></i>用户名不能为空</label>
+                                    <label class="text password">登录密码:<a style="margin-left:80px;text-decoration: none">忘记登录密码？</a></label>
+                                    <div class="login-input"><input class="shurukuang" type="password" name="password" id="password2" placeholder="登录密码"></div>
+                                    <label class="text password-error" style="display: none"><i class="fa fa-close"></i>密码不能为空</label>
+                                    <div class="login_submit">
+                                        <input class="submit" type="button" name="submit" id="login2" value="登录" >
+                                    </div>
+                                    <div class="other">
+                                        <a href="register.html" style="float: right;margin-right: 35px;text-decoration: none">没有账号？免费注册</a>
+                                    </div>
+                                </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <ul class="footer-ul">
+                <li><a href="">xxx集团:</a></li>
+                <li>&nbsp;&nbsp;&nbsp;xxx网络
+                    <a href="">-中国站</a>
+                    <a href="">国际站</a>
+                    <a href="">全球速卖通</a>
+                </li>
+                <li class="driver">|</li>
+                <li><a href="">淘宝网&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">天猫&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">聚划算&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">阿里云&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">中国雅虎&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">支付宝&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+            <ul>
+                <li class="ali">©2014 xxx集团 版权所有</li>
+            </ul>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>职位搜索</title>
+    <link rel="stylesheet" type="text/css" href="layui/css/layui.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="font-awesome-4.7.0/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="css/RegionalChoice.css" />
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+<!--    加入这个，toggle可以用，即使jQuery在1.9之后-->
+    <script src="http://code.jquery.com/jquery-migrate-1.0.0.js"></script>
+    <script src="js/jq-paginator.js"></script>
+    <script src="layui/layui.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script src="js/RegionalChoice.js"></script>
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                $login.html("登录");
+                $register.html("注册")
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.removeAttr("href");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'position.html'
+                })
+            }
+        })
+    </script>
+    <script>
+        layui.use('carousel', function(){
+            var carousel = layui.carousel;
+            //建造实例
+            carousel.render({
+                elem: '#test1'
+                ,width: '100%' //设置容器宽度
+                ,height:'140'
+                ,anim: 'default' //切换动画方式
+                ,autoplay:true,
+                interval:2000,
+            });
+        });
+    </script>
+<!--    全查-->
+    <script>
+        $(function () {
+            let findByUid_URL = 'http://localhost:8080/Page_war/collection/findCollByUid';
+            let POSITION_URL = 'http://localhost:8080/Page_war/position/findAll';
+            let APPLY_FIND_ID_URL = 'http://localhost:8080/Page_war/apply/queryApply';
+            let $currentPage = 1;
+            let $rows = 10;
+            let data = {
+                currentPage:$currentPage,
+                pageSize:$rows
+            };
+            $.getJSON(POSITION_URL,data,function (results) {
+                if (results.status === 200) {
+                    $.jqPaginator('#pagination0', {
+                        totalPages: results.data.totalPage,
+                        visiblePages: 10,
+                        currentPage: 1,
+                        first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                        prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                        next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                        last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                        page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                        onPageChange: function (page) {
+                            let data = {
+                                currentPage: page,
+                                pageSize: 10
+                            };
+                            $.getJSON(POSITION_URL,data, function (results) {
+                                $(".body").empty();
+                                if (results.status === 200) {
+                                    for (const result of results.data.list) {
+                                        createTable(result.pId,result.positionName,result.positionType,
+                                            result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum,result.mId);
+                                        let user = {
+                                            uId: sessionStorage.getItem("uId")
+                                        };
+                                        $.getJSON(findByUid_URL,user,function (success) {
+                                            if (success.status === 200){
+                                                for (const list of success.data) {
+                                                    for (const position of list.positionList) {
+                                                        if (position.pId===result.pId){
+                                                            let $input = $("input[pId1="+position.pId+"]");
+                                                            $input.attr({"disabled":"disabled"});
+                                                            $input.val("已收藏");
+                                                            $input.addClass("btn_disable");
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        $.getJSON(APPLY_FIND_ID_URL,user,function (success) {
+                                            if (success.status === 200){
+                                                for (const list of success.data) {
+                                                        if (list.pId===result.pId){
+                                                            let $input = $("input[pId2="+list.pId+"]");
+                                                            $input.attr({"disabled":"disabled"});
+                                                            $input.val("已申请");
+                                                            $input.addClass("btn_disable");
+                                                        }
+                                                }
+                                            }
+                                        })
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        });
+        function detail(obj) {
+                $(obj).parent().parent().next().show();
+                $(obj).parent().html("<a onclick='detail2(this)'><i class='fa fa-angle-up fa-2x'></i></a>");
+        }
+        function detail2(obj) {
+            $(obj).parent().parent().next().hide();
+            $(obj).parent().html("<a onclick='detail(this)'><i class='fa fa-angle-down fa-2x'></i></a>");
+        }
+    </script>
+<!--    根据地点查找-->
+    <script>
+        $(function () {
+            let LOCATION_URL = 'http://localhost:8080/Page_war/position/searchLocation';
+            let $currentPage = 1;
+            let $rows = 10;
+            let locations = [];
+            $(".location .work-location span a").toggle(function () {
+                $(".body").empty();
+                locations.push($(this).text());
+                $(this).toggleClass('selected');
+                $.ajax({
+                    //traditional深度序列化，防止数组加上[]
+                    traditional:true,
+                    type:'GET',
+                    url:LOCATION_URL,
+                    dataType:'json',
+                    data:{
+                        workPosition:locations,
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    },
+                    success:function (results) {
+                        if (results.status === 200){
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    $.ajax({
+                                        traditional:true,
+                                        type:'GET',
+                                        url:LOCATION_URL,
+                                        dataType:'json',
+                                        data:{
+                                            workPosition:locations,
+                                            currentPage:page,
+                                            pageSize:10
+                                        },
+                                        success:function (results) {
+                                                if (results.status === 200) {
+                                                    $(".body").empty();
+                                                    for (const result of results.data.list) {
+                                                        createTable(result.pId,result.positionName,result.positionType,
+                                                            result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum,result.mId)
+                                                    }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                })
+            },function () {
+                $(this).removeClass('selected');
+                locations.splice($.inArray($(this).text(),locations),1);
+                // alert(position_types)
+                if (locations.length===0){
+                    let POSITION_URL = 'http://localhost:8080/Page_war/position/findAll';
+                    let $currentPage = 1;
+                    let $rows = 10;
+                    let data = {
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    };
+                    $.getJSON(POSITION_URL,data,function (results) {
+                        if (results.status === 200) {
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    let data = {
+                                        currentPage: page,
+                                        pageSize: 10
+                                    };
+                                    $.getJSON(POSITION_URL,data, function (results) {
+                                        $(".body").empty();
+                                        if (results.status === 200) {
+                                            for (const result of results.data.list) {
+                                                createTable(result.pId,result.positionName,result.positionType,
+                                                    result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum,result.mId)
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    })
+                }
+                $.ajax({
+                    //traditional深度序列化，防止数组加上[]
+                    traditional:true,
+                    type:'GET',
+                    url:LOCATION_URL,
+                    dataType:'json',
+                    data:{
+                        workPosition:locations,
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    },
+                    success:function (results) {
+                        if (results.status === 200){
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    $.ajax({
+                                        traditional:true,
+                                        type:'GET',
+                                        url:LOCATION_URL,
+                                        dataType:'json',
+                                        data:{
+                                            workPosition:locations,
+                                            currentPage:page,
+                                            pageSize:10
+                                        },
+                                        success:function (results) {
+                                            if (results.status === 200) {
+                                                $(".body").empty();
+                                                for (const result of results.data.list) {
+                                                    createTable(result.pId,result.positionName,result.positionType,
+                                                        result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum)
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                })
+            });
+        })
+    </script>
+<!--    根据名称查找-->
+    <script>
+        $(function () {
+            let POSITION_NAME = 'http://localhost:8080/Page_war/position/searchByName';
+            let $currentPage = 1;
+            let $rows = 10;
+            $(".search-box").click(function () {
+                $(".body").empty();
+                let $name = $(".text").val();
+                $.ajax({
+                    //traditional深度序列化，防止数组加上[]
+                    traditional:true,
+                    type:'GET',
+                    url:POSITION_NAME,
+                    dataType:'json',
+                    data:{
+                        positionName:$name,
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    },
+                    success:function (results) {
+                        if (results.status === 200){
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    $.ajax({
+                                        traditional:true,
+                                        type:'GET',
+                                        url:POSITION_NAME,
+                                        dataType:'json',
+                                        data:{
+                                            positionName:$name,
+                                            currentPage:page,
+                                            pageSize:10
+                                        },
+                                        success:function (results) {
+                                            if (results.status === 200) {
+                                                $(".body").empty();
+                                                for (const result of results.data.list) {
+                                                    createTable(result.pId,result.positionName,result.positionType,
+                                                    result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum,result.mId)
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                })
+            });
+        });
+        function createTable(id,positionName,positionType,workPosition,publicTime,responsibility,require,pNum,mid) {
+            let $body = $(".body");
+            $body.append(
+                $("<tr>").append(
+                    $("<td>").append(
+                        $("<span>").append(
+                            $("<a style='color: #1a38ff;font-size: 14px;font-weight: bolder;margin-left: 5px'>").attr("href","position_detail.html?pId="+id).text(positionName)
+                        )
+                    ),
+                    $("<td>").append(
+                        $("<span>").text(positionType)
+                    ),
+                    $("<td>").append(
+                        $("<span>").text(workPosition)
+                    ),
+                    pNum == null?$("<td>").append(
+                        $("<span>").text("若干")
+                    ):$("<td>").append(
+                        $("<span>").text(pNum)
+                    ),
+                    $("<td>").append(
+                        $("<span>").text(publicTime)
+                    ),
+                    $("<td>").append(
+                        $("<a onclick='detail(this)'>").html("<i class='fa fa-angle-down fa-2x'></i>")
+                    )
+                ),
+                $("<tr class='detail' style='display: none'>").append(
+                    $("<td colspan='6'>").append(
+                        $("<div class='content'>").append(
+                            $("<p class='pt-20'>").text("岗位描述:"),
+                            $("<p class='pt-20' style='line-height: 21px;font-family:微软雅黑,serif;letter-spacing:2px;'>").html(responsibility),
+                            $("<p class='pt-20' style='padding-top: 20px'>").text("岗位要求:"),
+                            $("<p class='pt-20' style='line-height: 21px;font-family:微软雅黑,serif;letter-spacing:2px;'>").html(require)
+                        ),
+                        $("<div class='li-action-box'>").append(
+                            $("<div class='button-box'>").append(
+                                $("<input class='apply' onclick='apply(this)' type='button' value='申请岗位'>").attr("pId2",id).attr("mId",mid),
+                                $("<input class='collection' onclick='collection(this)'   type='button' value='收藏岗位'>").attr("pId1",id)
+                            )
+                        )
+                    )
+                )
+            )
+        }
+        function collection(obj) {
+            $uid = sessionStorage.getItem("uId");
+            let  COLLECTION_URL = 'http://localhost:8080/Page_war/collection/addCollection';
+            let $pId = $(obj).attr("pId1");
+            let data = {
+                uId:$uid,
+                pId:$pId
+            };
+            if ($uid === null){
+                alert("请先登录");
+                location.href = 'login.html';
+            }
+            $.getJSON(COLLECTION_URL,data,function (results) {
+                if (results.data === 1){
+                    alert("收藏成功");
+                    $(obj).val("已收藏");
+                    $(obj).attr({"disabled":"disabled"});
+                    $(obj).addClass("btn_disable");
+                }
+            })
+        }
+        function apply(obj) {
+            $uid = sessionStorage.getItem("uId");
+            let  APPLY_URL = 'http://localhost:8080/Page_war/apply/insertApply';
+            let $pId = $(obj).attr("pId2");
+            let $mId = $(obj).attr("mId");
+            let data = {
+                uId:$uid,
+                pId:$pId,
+                mId:$mId
+            };
+            if ($uid === null){
+                alert("请先登录");
+                location.href = 'login.html';
+            }
+            $.getJSON(APPLY_URL,data,function (results) {
+                if (results.data === 1){
+                    alert("申请成功");
+                    $(obj).val("已申请");
+                    $(obj).attr({"disabled":"disabled"});
+                    $(obj).addClass("btn_disable");
+                }
+            })
+        }
+    </script>
+<!--    根据uid查找已收藏的职位，改变颜色-->
+
+<!--    根据类型查找-->
+    <script>
+        $(function () {
+            let POSITION_TYPE = 'http://localhost:8080/Page_war/position/searchByType';
+            let $currentPage = 1;
+            let $rows = 10;
+            let position_types = [];
+            $(".location .category span a").toggle(function () {
+                $(".body").empty();
+                position_types.push($(this).text());
+                $(this).toggleClass('selected');
+                $.ajax({
+                    //traditional深度序列化，防止数组加上[]
+                    traditional:true,
+                    type:'GET',
+                    url:POSITION_TYPE,
+                    dataType:'json',
+                    data:{
+                        positionType:position_types,
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    },
+                    success:function (results) {
+                        if (results.status === 200){
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    $.ajax({
+                                        traditional:true,
+                                        type:'GET',
+                                        url:POSITION_TYPE,
+                                        dataType:'json',
+                                        data:{
+                                            positionType:position_types,
+                                            currentPage:page,
+                                            pageSize:10
+                                        },
+                                        success:function (results) {
+                                            if (results.status === 200) {
+                                                $(".body").empty();
+                                                for (const result of results.data.list) {
+                                                    createTable(result.pId,result.positionName,result.positionType,
+                                                        result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum)
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                })
+            },function () {
+                $(this).removeClass('selected');
+                position_types.splice($.inArray($(this).text(),position_types),1);
+                // alert(position_types)
+                if (position_types.length===0){
+                    let POSITION_URL = 'http://localhost:8080/Page_war/position/findAll';
+                    let $currentPage = 1;
+                    let $rows = 10;
+                    let data = {
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    };
+                    $.getJSON(POSITION_URL,data,function (results) {
+                        if (results.status === 200) {
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    let data = {
+                                        currentPage: page,
+                                        pageSize: 10
+                                    };
+                                    $.getJSON(POSITION_URL,data, function (results) {
+                                        $(".body").empty();
+                                        if (results.status === 200) {
+                                            for (const result of results.data.list) {
+                                                createTable(result.pId,result.positionName,result.positionType,
+                                                    result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum)
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    })
+                }
+                $.ajax({
+                    //traditional深度序列化，防止数组加上[]
+                    traditional:true,
+                    type:'GET',
+                    url:POSITION_TYPE,
+                    dataType:'json',
+                    data:{
+                        positionType:position_types,
+                        currentPage:$currentPage,
+                        pageSize:$rows
+                    },
+                    success:function (results) {
+                        if (results.status === 200){
+                            $.jqPaginator('#pagination0', {
+                                totalPages: results.data.totalPage,
+                                visiblePages: 10,
+                                currentPage: 1,
+                                first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                onPageChange: function (page) {
+                                    $.ajax({
+                                        traditional:true,
+                                        type:'GET',
+                                        url:POSITION_TYPE,
+                                        dataType:'json',
+                                        data:{
+                                            positionType:position_types,
+                                            currentPage:page,
+                                            pageSize:10
+                                        },
+                                        success:function (results) {
+                                            if (results.status === 200) {
+                                                $(".body").empty();
+                                                for (const result of results.data.list) {
+                                                    createTable(result.pId,result.positionName,result.positionType,
+                                                        result.workPosition,result.publicTime,result.responsibility,result.require,result.pNum)
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                })
+            });
+        })
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer
+        }
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*轮播*/
+        .banner {
+            width: 100%;
+            height: 140px;
+            /*transform: translateY(-15px);*/
+        }
+        #test1{
+            width: 1349px;
+            height: 140px;
+        }
+        .item{
+            transform: translateY(-10px);
+        }
+        .banner .layui-carousel-ind ul,button{
+            display: none;
+        }
+
+        /*主要内容*/
+        .main-box{
+            width: 1000px;
+            height: auto;
+            margin-top: 20px;
+            margin-left: 175.5px;
+        }
+        .left-box{
+            width: 760px;
+            height: auto;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        .big-search-box{
+            width: 758px;
+            height: 150px;
+        }
+        .big-search-box .search input{
+            margin-top: 20px;
+            margin-left: 30px;
+            border: 2px solid #ff7512;
+            height: 49px;
+        }
+        .big-search-box .search .text{
+            width: 460px;
+            /*height: 37px;*/
+        }
+        .big-search-box .search .search-box{
+            width: 94px;
+            height: 50px;
+            transform: translateX(-37px);
+            margin-top: -6px;
+            background: #ff7512;
+            font-size: 18px;
+            font-family: 黑体,serif;
+            font-weight: bolder;
+            color: #FFFFFF;
+        }
+        input::-webkit-input-placeholder {
+            /* WebKit browsers */
+            color: #999;
+            font-size: 16px;
+        }
+        .location{
+            height: 96px;
+        }
+        .work-location{
+            height: 27px;
+            margin-top: 20px;
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+        .work-location a{
+            font-size: 14px;
+            color: #1a38ff;
+            border: 2px solid #FFFFFF;
+            text-decoration: none;
+            /*color: rgba(255,255,255,0.80);*/
+        }
+        /*.work-location, .work-location a {color: rgba(255, 135, 27, 0.8);}*/
+        .work-location a:hover {
+            color: #FFFFFF;
+            background: #F37327;
+        }
+
+        /*地点被选中后变色，定义toggleClass事件*/
+        .location .work-location span a.selected{
+            background: #e87502;
+            color: #FFFFFF;
+        }
+
+        .category{
+            height: 48px;
+            margin-left: 30px;
+        }
+        .category a{
+            font-size: 14px;
+            color: #1a38ff;
+            border: 2px solid #FFFFFF;
+        }
+        .category a:hover {
+            color: #FFFFFF;
+            background: #F37327;
+        }
+        /*类别被选中后变色，定义toggleClass事件*/
+        .location .category span a.selected{
+            background: #e87502;
+            color: #FFFFFF;
+        }
+        .main-box h3{
+            font-size: 16px;
+            font-weight: bolder;
+            color: #808791;
+        }
+        .left-box{
+            height: auto;
+        }
+        .list-box{
+            transform: translateY(50px);
+            height: auto;
+            width: 758px;
+        }
+        .left-box .list-box table{
+            width: 100%;
+            height: auto;
+        }
+        .left-box .list-box table a{
+            text-decoration: none;
+        }
+        .left-box .list-box table thead{
+            border-bottom: solid 1px rgba(169, 177, 187, 0.8);
+            background: white;
+        }
+        .left-box .list-box table thead span{
+            float: left;
+            font-size: 14px;
+            /*font-family: 宋体,serif;*/
+            color:rgba(67,67,86,0.8)
+        }
+        .left-box .list-box table tbody tr{
+            height: 55px;
+        }
+        .left-box .list-box table tbody tr:hover{
+            background: #dbddff;
+        }
+        .left-box .list-box table tbody tr td{
+            border-bottom: solid 1px rgba(195, 204, 214, 0.8);
+        }
+
+        /*申请岗位和收藏按钮*/
+        .li-action-box .button-box .apply{
+            background: #e87502;
+            color: #FFFFFF;
+            height: 31px;
+            width: 80px;
+            margin-left: 20px;
+            font-family: 黑体,serif;
+            font-weight: bold;
+            border: 2px solid #ff7512;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        .li-action-box .button-box .collection{
+            background: #296aff;
+            color: #FFFFFF;
+            height: 31px;
+            width: 80px;
+            margin-left: 10px;
+            font-family: 黑体,serif;
+            font-weight: bold;
+            border: 2px solid #296aff;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+        /* 以下是CSS样式代码，具体样式按自己需求写 */
+        .li-action-box .button-box .btn_disable{
+            background: #d4d4d4;
+            color: #ffffff;
+            height: 31px;
+            width: 80px;
+            margin-left: 10px;
+            font-family: 黑体,serif;
+            font-weight: bold;
+            border: 2px solid #d4d4d4;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+
+        /*分页按钮*/
+        .footer{
+            transform: translateY(-30px);
+
+        }
+        .pagination>.active>a,.pagination>.active>span:hover{
+            background-color: #e87502;
+            border-color: #e87502;
+        }
+        .pagination>.active>a:hover{
+            background-color: #e87502;
+            border-color: #e87502;
+        }
+
+        /*底部*/
+        .footer-list{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer-list .footer-ul{margin-left: 23%}
+        .footer-list .driver{width: 20px}
+        .footer-list .ali{transform: translateX(650px);color: #093807;font-family: 微软雅黑,serif}
+    </style>
+
+<!--  城市选择  未完成-->
+    <script>
+        $(function () {
+            //------生成地区
+            GetRegionPlug();
+            //------选择后确定按钮
+            $(".btntest1").click(function () {
+                var areas = GetChecked().join(",");//已选择的城市名
+                let $areas = $("#areas");
+
+                $areas.html(areas);//显示在页面
+                // background: #e87502;
+                // color: #FFFFFF;
+                // $areas.css("background","#e87502");
+                // $areas.css("color","#FFFFFF");
+                // $(this).toggleClass('selected');
+                // $("#selectedareas").val(areas);//存入隐藏的input
+                $('#myModal').modal('hide');//完后隐藏模态框
+            });
+            // $("#areas").click(function () {
+            //     $("#areas").empty()
+            // })
+        })
+    </script>
+<!--    模态框-->
+    <style>
+        .modal-dialog {
+            width: 412px;
+            height: auto;
+        }
+        .modal-header{
+            border: none;
+            height: 30px;
+        }
+        .modal-dialog .modal-content .modal-header .btn{
+            float: right;
+            width: 18px;
+            height: 18px;
+        }
+        .modal-dialog .modal-content .modal-header .btn i{
+            color: #0C0C0C;
+            transform: translateX(-4px);
+            position: absolute;
+            margin-top: -5px;
+        }
+        .modal-content{
+            /*width: 395px;*/
+            height: 350px;
+            background: #f0f0f0;
+        }
+        .content-container {
+            width: 395px;
+            height: 290px;
+            background: #FFFFFF;
+        }
+         .login-box{
+             width: 380px;
+             height: 290px;
+             border:1px solid #c5c3bc;
+         }
+         .login-iframe{
+             width: 350px;
+             height: 275px;
+
+         }
+         .login-box .login-vip{
+            width: 350px;
+            height: 27px;
+            font-size: 16px;
+            font-family: 微软雅黑,serif;
+            font-weight: bolder;
+            border-bottom: 1px solid #c5c3bc;
+             margin-top: 10px;
+             margin-left: 15px;
+        }
+         .login-box .username{
+            width: 350px;
+            height: 16px;
+            font-size: 12px;
+            padding-top: 15px;
+            font-family: 微软雅黑,serif;
+            font-weight: bolder;
+             margin-left: 15px;
+        }
+         .login-box .login-name{
+            width: 350px;
+            height: 37px;
+            padding-top: 5px;
+        }
+         .login .login-name input{
+            width: 350px;
+            height: 27px;
+            margin-top: 14px;
+             margin-left: 15px;
+        }
+         .login .password{
+            width: 350px;
+            height: 16px;
+            font-size: 12px;
+            padding-top: 15px;
+            font-family: 微软雅黑,serif;
+            font-weight: bolder;
+             margin-left: 15px;
+        }
+         .login-box .login-pass{
+            width: 350px;
+            height: 37px;
+            padding-top: 10px;
+        }
+         .login-box .login-pass input{
+            width: 350px;
+            height: 27px;
+            margin-top: 5px;
+             margin-left: 15px;
+        }
+         .login-box .login_submit{
+            width: 350px;
+            height: 40px;
+            transform: translateY(40px);
+        }
+         .login-box .login_submit input{
+            width: 350px;
+            height: 30px;
+            border: 0;
+            margin-bottom: 5px;
+             margin-left: 15px;
+        }
+        .submit{
+            background: #ff871b;
+            letter-spacing: 1px;border-radius: 2px;
+            font-family: 微软雅黑,serif;
+            color: #f3f0e9;
+            font-weight: bolder;
+        }
+        .submit:hover{
+            background: #ffa628;
+        }
+        .other{
+            /*width: 100px;*/
+            height: 18px;
+            margin-top: 40px;
+        }
+        .other p{
+            font-family: 微软雅黑,serif;
+            color: #6c737d;
+            margin-left: 15px;
+        }
+        .other a{
+            float: right;
+            transform: translateY(-30px);
+            text-decoration: none;
+        }
+        .other img{
+            transform: translateY(-32px);
+            margin-left: 105px;
+            /*margin-left: 15px;*/
+        }
+    </style>
+</head>
+<body>
+    <div class="hearder">
+        <header>
+            <div class="top center">
+                <div class="left fl">
+                    <ul>
+<!--                        <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                        <li><a href="">|</a></li>-->
+                        <li><a href="">社招官网</a></li>
+                        <li><a href="index.html">首页&nbsp;</a></li>
+                        <li><a href="position.html">社会招聘&nbsp;</a></li>
+                        <li><a href="">校园招聘&nbsp;</a></li>
+                        <li><a href="login.html">企业服务&nbsp;</a></li>
+                        <li><a href="favorite.html">个人中心&nbsp;</a></li>
+                        <div class="clear"></div>
+                    </ul>
+                </div>
+                <div class="right fr">
+                    <div class="fr">
+                        <ul>
+                            <li><a>欢迎来到xxx公司</a></li>
+                            <li><a href="./login.html" class="login" >登录</a></li>
+                            <li>|</li>
+                            <li><a href="./register.html" class="register">注册</a></li>
+                            <li>|</li>
+                            <li><a href="">消息通知</a></li>
+                        </ul>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </header>
+        <div class="banner">
+            <div class="layui-carousel" id="test1">
+                <div carousel-item class="item">
+                    <div><img src="image/background5.jpg"></div>
+                    <div><img src="image/background3.png"></div>
+                    <div><img src="image/background4.jpg"></div>
+                    <div><img src="image/background6.jpg"></div>
+                </div>
+            </div>
+        </div>
+        <div class="main-box layout">
+            <h3>职位搜索</h3>
+            <div class="left-box">
+                <div class="big-search-box">
+                    <div class="search">
+                        <input class="text" style="font-size: 16px" type="text" placeholder="请输入职位关键字">
+                        <input class="search-box" type="button" value="搜索">
+                    </div>
+                    <div class="location">
+                        <div class="work-location">
+                            <b style="color: #808791">工作地点：</b>
+                            <span><a href="javascript:">广州</a>
+                            <a href="javascript:">北京</a>
+                            <a href="javascript:">上海</a>
+                            <a href="javascript:">深圳</a>
+                            <a href="javascript:" id="areas" class="form-control-static"></a>
+                            <a href="javascript:" >更多>></a>
+                            </span>
+                        </div>
+<!--                       城市选择 模态框-->
+<!--                        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">-->
+<!--                            <div class="modal-dialog modal-lg">-->
+<!--                                <div class="modal-content">-->
+<!--                                    <div class="modal-header">-->
+<!--                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×-->
+<!--                                        </button>-->
+<!--                                        <h4 class="modal-title" id="myModalLabel">-->
+<!--                                            选择区域-->
+<!--                                        </h4>-->
+<!--                                    </div>-->
+<!--                                    <div class="modal-body">-->
+<!--                                        <div class="test-div">-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="modal-footer">-->
+<!--                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭-->
+<!--                                        </button>-->
+<!--                                        <button type="button" class="btn btn-primary btntest1">-->
+<!--                                            确定-->
+<!--                                        </button>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+                        <div class="category">
+                            <b style="color: #808791">职业类别：</b>
+                            <span>
+                            <a href="javascript:">技术</a>
+                            <a href="javascript:">产品</a>
+                            <a href="javascript:">内容</a>
+                            <a href="javascript:">设计</a>
+                            <a href="javascript:">行政支持</a>
+                            <a href="javascript:">营销与公关</a>
+                            <a href="javascript:">战略与投资</a>
+                            <a href="javascript:">人力资源</a><br>
+                            <a href="javascript:" style="margin-left: 78px;">财务</a>
+                            <a href="javascript:">销售、服务与支持</a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-box">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th width="40%"><span style="margin-left: 5px">职位名称</span></th>
+                                <th width="12%"><span>职位类别</span></th>
+                                <th width="12%"><span>工作地点</span></th>
+                                <th width="10%"><span>招聘人数</span></th>
+                                <th width="20%"><span>更新时间</span></th>
+                                <th><span>&nbsp;</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="body">
+
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <div id="demo1-text"></div>
+                        <ul class="pagination" id="pagination0"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer-list">
+            <ul class="footer-ul">
+                <li><a href="">xxx集团:</a></li>
+                <li>&nbsp;&nbsp;&nbsp;xxx网络
+                    <a href="">-中国站</a>
+                    <a href="">国际站</a>
+                    <a href="">全球速卖通</a>
+                </li>
+                <li class="driver">|</li>
+                <li><a href="">淘宝网&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">天猫&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">聚划算&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">阿里云&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">中国雅虎&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">支付宝&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+            <ul>
+                <li class="ali">©2014 xxx集团 版权所有</li>
+            </ul>
+        </footer>
+    </div>
+<!--    模态框-->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <b class="modal-title" id="myModalLabel">
+                        请登录
+                    </b>
+                    <a class="btn btn-default" data-dismiss="modal"><i class="fa fa-times "></i></a>
+                </div>
+                <div class="modal-body">
+                        <div class="content-container">
+                            <div class="login-box">
+                                <div class="login-iframe">
+                                    <form method="post" action="" class="form center">
+                                        <div class="login-vip">淘宝会员</div>
+                                        <div class="username">登录名:</div>
+                                        <div class="login-name"><input class="shurukuang" type="text" name="username" id="username" placeholder="手机/邮箱/会员名"></div>
+                                        <div class="password">登录密码:<a style="float: right;text-decoration: none">忘记登录密码？</a></div>
+                                        <div class="login-pass"><input class="shurukuang" type="text" name="password" id="password" placeholder="登录密码"></div>
+                                        <div class="login_submit">
+                                            <input class="submit btn btn-primary" type="button" name="submit" id="login" value="登录" >
+                                        </div>
+                                        <div class="other">
+                                            <p>其他登录方式:</p>
+                                            <img  src="image/tubiao.gif" alt="" width="20" height="14">
+                                            <a href="register.html" style="margin-left: 50px">免费注册</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+<!--                收藏模态框-->
+                <!-- 模态框（Modal） -->
+<!--                <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">-->
+<!--                    <div class="modal-dialog">-->
+<!--                        <div class="modal-content">-->
+<!--                            <div class="modal-header">-->
+<!--                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">-->
+<!--                                    &times;-->
+<!--                                </button>-->
+<!--                                <h4 class="modal-title" id="myModalLabel1">-->
+<!--                                    模态框（Modal）标题-->
+<!--                                </h4>-->
+<!--                            </div>-->
+<!--                            <div class="modal-body">-->
+<!--                                在这里添加一些文本-->
+<!--                            </div>-->
+<!--                            <div class="modal-footer">-->
+<!--                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭-->
+<!--                                </button>-->
+<!--                                <button type="button" class="btn btn-primary">-->
+<!--                                    提交更改-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                        </div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
+<!--                    </div>&lt;!&ndash; /.modal &ndash;&gt;-->
+<!--                </div>-->
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</body>
+</html>

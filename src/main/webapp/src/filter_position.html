@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>已过滤简历</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="font-awesome-4.7.0/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <script src="js/jquery.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/jq-paginator.js"></script>
+    <script src="js/Validform_v5.3.2_min.js"></script>
+    <script>
+        $(function () {
+            $(".login").html(sessionStorage.getItem("email"));
+            $(".register").click(function () {
+                sessionStorage.clear()
+            });
+            $(".screen-down .t1 a").click(function () {
+                // $(this).addClass("current");
+                $(this).addClass("current");
+                $(this).siblings().removeClass("current")
+                // $(this).siblings().removeClass("current")
+            });
+            $(".screen-down .t2 a").click(function () {
+                // $(this).addClass("current");
+                $(this).addClass("current");
+                $(this).siblings().removeClass("current")
+                // $(this).siblings().removeClass("current")
+            });
+        })
+    </script>
+    <script>
+        // 不合适简历，
+        $(function () {
+            let RESUME_URL = 'http://localhost:8080/Page_war/apply/queryByMid';
+            let data = {
+                access:0,
+                mId:sessionStorage.getItem("mId")
+            };
+            // let works = [];
+            let degree  =[];
+            $.getJSON(RESUME_URL,data,function (results) {
+                if (results.status === 200) {
+                    if (results.data.size === 0) {
+                        $(".context").empty();
+                        $("#pagination4").empty();
+                        $(".context").append(
+                            $("<div style='width: 220px;margin-left: 300px'>").append(
+                                $("<img style='margin-left: 50px' src='image/bigrobot.png'><br>"),
+                                $("<span>").text("目前还没有这样的候选人投递呢~")
+                            )
+                        )
+                    }else {
+                        $.jqPaginator("#pagination4", {
+                            totalPages: results.data.pages,
+                            visiblePages: 10,
+                            currentPage: 1,
+                            first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                            prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                            next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                            last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                            page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                            onPageChange: function (page) {
+                                let data = {
+                                    access:0,
+                                    mId: sessionStorage.getItem("mId"),
+                                    currentPage: page,
+                                    pageSize: 5
+                                };
+                                $.getJSON(RESUME_URL,data,function (results) {
+                                    $(".context").empty();
+
+                                    if (results.status === 200) {
+                                        // alert(results.data.total)
+                                        for (const result of results.data.list) {
+                                            for (const education of result.resumeAndPosition.eductionExperienceList) {
+                                                for (const position of result.positionList) {
+                                                    for (const user of result.userList) {
+                                                        if (position.degree === "本科及以上") {
+                                                            degree.length = 0;
+                                                            degree = ["本科","硕士","博士","博士后"]
+                                                        }
+                                                        if (position.degree === "专科及以上"){
+                                                            degree.length = 0;
+                                                            degree = ["专科","本科","硕士","博士","博士后"]
+                                                        }
+                                                        if (position.degree === "硕士及以上") {
+                                                            degree.length = 0;
+                                                            degree = ["硕士","博士","博士后"]
+                                                        }
+                                                        if (position.degree === "博士及以上") {
+                                                            degree.length = 0;
+                                                            degree = ["博士","博士后"]
+                                                        }
+                                                        if ($.inArray(result.resumeAndPosition.mostEducation,degree)===-1) {
+                                                            if (result.access === 0) {
+                                                                $(".my-location").text("我的位置：不合适简历");
+                                                                $(".context").append(
+                                                                    $("<ul class='reset'>").append(
+                                                                        $("<li class='onlineResume' style='width: 750px;margin-left: 20px'>").append(
+                                                                            $("<label class='check'>").append($("<input type='checkbox' name='check'>").attr("uid",result.uId)),
+                                                                            $("<div class='resumeShow'>").append(
+                                                                                $("<a>").append($("<img>").attr("src","http://localhost:8080/upload/"+result.resumeAndPosition.fileUserList.image)),
+                                                                                $("<div class='resumeIntro'>").append(
+                                                                                    $("<h3 style='margin: 10px 0;width: 370px'>").append($("<a>").attr("href","personal_resume.html?uId="+user.uId).text(result.resumeAndPosition.username+"简历")),
+                                                                                    $("<span class='time'>").text("投递时间："+result.crtTime),
+                                                                                    $("<div>").html(result.resumeAndPosition.username+"/"+result.userList[0].sex+"/"+result.resumeAndPosition.mostEducation+"/"
+                                                                                        +result.resumeAndPosition.workExperience+"/"+result.resumeAndPosition.nowPalce+"<br>"+result.resumeAndPosition.mostEducation+"/"+result.resumeAndPosition.eductionExperienceList[0].school+"/"+result.resumeAndPosition.eductionExperienceList[0].major),
+                                                                                    $("<div class='Job-application'>").append(
+                                                                                        $("<span>").append(
+                                                                                            "应聘职位：",
+                                                                                            $("<a>").attr("href","positionScan.html?pId="+position.pId+"&flag="+position.flag).text(result.positionList[0].positionName)
+                                                                                        )
+                                                                                    )
+                                                                                ),
+                                                                                $("<div class='contactInfo'>").append(
+                                                                                    $("<span class='phone'>").text("电话："),result.resumeAndPosition.phone,
+                                                                                    $("<span class='email'>").text("邮箱："),
+                                                                                    $("<a>").text(result.resumeAndPosition.email),
+                                                                                    $("<div class='info'>").append(
+                                                                                        $("<a onclick='handle(this)' style='margin-right: 10px'>").attr("uid",result.uId).attr("access","0").text("待定简历"),
+                                                                                        $("<a onclick='handle(this)'>").attr("uid",result.uId).attr("access","3").text("删除")
+                                                                                    )
+                                                                                )
+                                                                            )
+                                                                        )
+                                                                    )
+                                                                );
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                    }
+                }
+            });
+            // 全选
+            $(".allCheck").click(function () {
+                if (this.checked) {
+                    $(".context input[name='check']").attr("checked",true)
+                }else {
+                    $(".context input[name='check']").attr("checked",false)
+                }
+
+            });
+        });
+        // 删除,通知面试
+        function handle(obj) {
+            let UPDATE_ACCESS_URL = 'http://localhost:8080/Page_war/apply/update';
+            let data = {
+                access:$(obj).attr("access"),
+                uid:$(obj).attr("uid")
+            };
+            $.post(UPDATE_ACCESS_URL,data,function (results) {
+                if (results.data === 1) {
+                    $(obj).parents(".reset").remove();
+                    let RESUME_URL = 'http://localhost:8080/Page_war/apply/queryByMid';
+                    let data = {
+                        access:$(obj).attr("access"),
+                        mId:sessionStorage.getItem("mId")
+                    };
+                    $.getJSON(RESUME_URL,data,function (result) {
+                        if (result.status === 200){
+                            if (result.data.size === 0) {
+                                $(".context").empty();
+                                $("#pagination6").empty();
+                                $(".context").append(
+                                    $("<div style='width: 220px;margin-left: 300px'>").append(
+                                        $("<img style='margin-left: 50px' src='image/bigrobot.png'><br>"),
+                                        $("<span>").text("目前还没有这样的候选人投递呢~")
+                                    )
+                                );
+                            }
+                            $("#wait-position").text("待定简历："+result.data.total+"个")
+                        }
+                    })
+                }
+            },'json')
+        }
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer;
+            text-decoration: none;
+        }
+        /*头部*/
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*内容*/
+        .container-fluid{
+            background: #edf1f7;
+            margin-bottom: 120px;
+        }
+        .container{
+            margin-top: 30px;
+        }
+        /*导航*/
+        .nav{
+            width: 900px;
+            transform: translateX(120px);
+            margin-bottom: 40px;
+        }
+        .nav ul li{
+            float: left;
+            padding-left: 60px;
+            font-size: 18px;
+        }
+
+        .nav a:hover{
+            border-bottom: solid #12af26;
+        }
+        /*点击颜色固定*/
+        .clickstyle a {
+            text-decoration: none;
+            font-size: 18px;
+            border-bottom: solid #12af26;
+        }
+
+        .my-position,.my-resume {
+            padding: 8px 16px;
+            display: block;
+            background-color: #f1f1ff;
+            font-size: 16px;
+            height: 46px;
+        }
+        /* 鼠标移动到选项上修改背景颜色 */
+
+        .main-context{
+            width: 800px;
+            transform: translateX(180px);
+            /*margin/-right: 30px;*/
+        }
+        .list-box{
+            /*width: 850px;*/
+            border: 1px solid #ccc;
+            background: #ffffff;
+        }
+        .table thead tr th{
+
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+        .position{
+            color: #296aff;
+        }
+
+        .myTable .text-td{
+            width: 100px;
+            height: 50px;
+        }
+        .myTable tr td input{
+            width: 380px;
+            height: 40px;
+        }
+        .myTable tr td{
+            padding-top: 20px;
+
+        }
+        .myTable tr td textarea{
+            width: 380px;
+
+        }
+        *{
+            font-family: 微软雅黑,serif;
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+        form h3{
+            border-bottom: dashed 1px;
+            color: #FF6600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+        .check{
+            padding-right: 10px;
+            float: left;margin-top: 50px
+        }
+        .check input[type = checkbox]{
+            width: 17px;
+            height: 17px;
+            margin: 0;
+            border: 0;
+        }
+        .resumeShow{
+            height: 130px;
+            /*background-color: #edf1f7;*/
+        }
+        .resumeShow img{
+            margin-top: 10px;
+            width: 90px;
+            height: 90px;
+        }
+        .resumeIntro{
+            float:right;width: 620px;height: 90px;
+        }
+        .resumeIntro .time{
+            float: right;margin: -25px 0 0 0 ;margin-right: 10px
+        }
+        .contactInfo{
+            /*background: #f2f2f2;*/
+            border-top: 1px dashed #d9d9d9;
+        }
+        .contactInfo .info{
+            float: right;margin-right: 10px
+        }
+        .contactInfo .phone,.email{
+            margin-left: 25px
+        }
+        .table-header{
+            width: 750px;
+            margin-left: 20px;
+            border-bottom: solid 1px #b7c0ca;
+            margin-bottom: 5px;
+        }
+        .all {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-right: 20px;
+        }
+        .all input[type = checkbox]{
+            width: 17px;
+            height: 17px;
+            transform: translateY(3px);
+            margin-right: 5px;
+        }
+        .inappropriate,.interview a{
+            font-size: 14px;
+            color: #3e79ff;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .inappropriate a:hover{
+            background-color: #12af26;
+            color: white;
+        }
+        .interview a:hover{
+            background-color: #12af26;
+            color: white;
+        }
+        .screen a{
+            float: right;
+            margin-right: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0C0C0C;
+        }
+        .screen .fa-sort-down{
+            transform: translateY(-3px);
+            padding-left: 3px;
+        }
+        .screen .fa-sort-up{
+            transform: translateY(3px);
+            padding-left: 3px;
+        }
+        .text{
+            float: left
+        }
+        .screen-down{
+            background-color: #edf1f7;
+            margin-top: 10px;
+            margin-left: 40px;
+        }
+        .screen-down dl{
+            margin-bottom: 10px;
+        }
+        .screen-down dl dd a{
+            padding: 0 8px;
+            margin-right: 10px;
+        }
+        .screen-down dl dd .current-location{
+            color: #fff;
+            background: #019875;
+        }
+        .screen-down dl dd .current{
+            color: #fff;
+            background: #019875;
+        }
+        .screen-down a:hover{
+            color: #fff;
+            background: #019875;
+        }
+        .add-position{
+            display: block;
+            width: 105px;
+            height: 30px;
+            background: #2a96ff;
+            color: #ffffff !important;
+            text-align: center;
+            line-height: 30px;
+            font-size: 14px;
+            border-radius: 14px;
+            box-shadow: 0 5px 10px #d8ecff;
+            margin-left: 40px;
+            margin-top: 5px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #edf1f7;
+            min-width: 110px;
+        }
+
+        .dropdown-content a {
+            color: #3e79ff;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {background-color: #f1f1f1}
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /*底部*/
+        .footer-list{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            margin-top: 50px;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer-list .footer-ul{margin-left: 18%}
+        .footer-list .driver{width: 20px}
+        .footer-list .ali{transform: translateX(450px);color: #093807;font-family: 微软雅黑,serif}
+    </style>
+</head>
+<body>
+<header>
+    <div class="top center">
+        <div class="left fl">
+            <ul>
+<!--                <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                <li><a href="">|</a></li>-->
+                <li><a href="index.html">社招官网</a></li>
+                <li><a href="enterprise_index.html">首页&nbsp;</a></li>
+                <li><a href="post_job.html">职位发布&nbsp;</a></li>
+                <li><a href="">应聘管理&nbsp;</a></li>
+                <li><a href="resume_search.html">简历搜索&nbsp;</a></li>
+                <li><a href="">系统设置&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+        </div>
+        <div class="right fr">
+            <div class="fr">
+                <ul>
+                    <li><a>欢迎来到xxx公司</a></li>
+                    <li><a href="" class="login" ></a></li>
+                    <li>|</li>
+                    <li><a href="./login.html" class="register">退出</a></li>
+                    <li>|</li>
+                    <li><a href="">消息通知</a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+    </div>
+</header>
+<div class="container-fluid">
+
+    <div class="container">
+        <div class="nav">
+            <ul>
+                <li ><a href="enterprise_index.html">有效职位</a></li>
+                <li><a href="offline_position.html">已下线职位</a></li>
+                <li >
+                    <div class="dropdown">
+                        <a class="drop" href="undetermined_position.html">待定简历</a>
+                        <div class="dropdown-content">
+                            <a href="pending_resume.html">待定简历处理</a>
+                        </div>
+                    </div>
+                </li>
+                <li ><a id="inappropriate">不合适简历</a></li>
+                <li><a href="informed_position.html">已通知面试</a></li>
+                <li class="clickstyle"><a href="filter_position.html">已过滤简历</a></li>
+            </ul>
+        </div>
+        <div class="main-context">
+            <h4 class="my-location" style="font-size: 12px"></h4>
+            <div class="list-box">
+                <div class="main-list6">
+                    <h3 class="position" id="inappropriate-resume">已过滤简历</h3>
+                    <div class="table-header">
+                        <span class="all"><input class="allCheck" type="checkbox">全选</span>
+                        <span class="inappropriate"><a>删除</a></span>
+                    </div>
+                    <div class="context">
+
+                    </div>
+                    <div class="footer">
+                        <div id="demo1-text6"></div>
+                        <ul class="pagination" id="pagination6"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer-list">
+            <ul class="footer-ul">
+                <li><a href="">xxx集团:</a></li>
+                <li>&nbsp;&nbsp;&nbsp;xxx网络
+                    <a href="">-中国站</a>
+                    <a href="">国际站</a>
+                    <a href="">全球速卖通</a>
+                </li>
+                <li class="driver">|</li>
+                <li><a href="">淘宝网&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">天猫&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">聚划算&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">阿里云&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">中国雅虎&nbsp;</a></li>
+                <li class="driver">|</li>
+                <li><a href="">支付宝&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+            <ul>
+                <li class="ali">©2014 xxx集团 版权所有</li>
+            </ul>
+        </footer>
+    </div>
+</div>
+</body>
+</html>

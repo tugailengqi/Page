@@ -1,0 +1,143 @@
+/*表单css样式*/
+body{
+    font-family: Microsoft Yahei,serif;
+    font-size: 15px;
+}
+input.error{
+    border: 1px solid #E6594E;
+}
+
+input.highlight{
+    border: 1px solid #7abd54;
+}
+
+label.error{
+    margin-left: 5px;
+    padding-left: 30px;
+    color: red;
+}
+
+/*全局css*/
+ .header{background: url('../image/login-bg2.jpg') no-repeat center center;width:1326px;height: 657px;}
+.register{
+    width: 650px;
+    height: 570px;
+    border:1px solid #c5c3bc;
+    margin: auto;
+    position: absolute;
+    border-radius: 10px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 50px;
+    background: #ffffff;
+    opacity: 0.7;
+}
+.register-left{
+    width: 300px;
+    height: 408px;
+    margin-left: 35px;
+    /*border: 1px solid #e1ded8;*/
+}
+.title h3{
+    text-align: center;
+    font-family: 黑体,serif;
+    font-size: 16px;
+    color: #ff871b;
+}
+.register-form i{
+    border:solid white;
+    transform: translateX(30px);
+}
+.register-form input{
+    margin-top: 5px;
+    padding-left: 30px;
+    font-size: 14px;
+}
+.yanzheng{
+    margin-left: 37px;
+    width: 224px;
+}
+.yanzheng .update{
+    float: right;
+    margin-top: 5px;
+}
+
+
+.yanzheng img{
+    width: 80px;
+    height: 30px;
+}
+.yanzheng a{
+    text-decoration: none;
+}
+.register .register-right{
+    width: 236px;
+    height: 476px;
+    float: right;
+    transform: translateY(-415px);
+    /*background: #f8f8f8;*/
+    /*bottom: 50px;*/
+}
+.register .register-right .register-m{
+    width: 180px;
+    height: 408px;
+    margin-left: 50px;
+}
+.register .register-right p{
+    margin-top: 20px;
+}
+.register .register-right .QQ{
+    width: 135px;
+    height: 28px;
+    border: 1px solid #3546f8;
+    border-radius: 5px;
+    transform: translateY(25px);
+}
+.register .register-right .QQ a,i{
+    margin-left: 15px;
+    margin-top: 10px;
+}
+.register .register-right .wei-bo{
+    width: 135px;
+    height: 28px;
+    border: 1px solid #f83649;
+    border-radius: 5px;
+    transform: translateY(40px);
+}
+.register .register-right .wei-bo a,i{
+    margin-left: 15px;
+    margin-top: 10px;
+}
+.register .register-right .wei-xin{
+    width: 135px;
+    height: 28px;
+    border: 1px solid #31f82c;
+    border-radius: 5px;
+    transform: translateY(55px);
+}
+.register .register-right .wei-xin a,i{
+    margin-left: 15px;
+    margin-top: 10px;
+}
+.register .register-right .have{
+    transform: translateY(60px);
+}
+.register .register-form .regist_submit input{
+    transform: translateX(-8px);
+}
+.register .register-form .regist_submit{margin: 20px auto;}
+.register .register-form .submit{border:none;width: 200px;height: 45px;margin-left:45px;background: #ff6700;color: #fff; font-size: 22px;font-weight: bold;letter-spacing: 8px;cursor:pointer}
+.register .register-form .submit:hover{border:1px solid #ccc;}
+
+
+.footer{
+    width: 100%;
+    height: 81px;
+    border-top: 1px solid #c5c3bc;
+    transform: translateY(600px);
+}
+footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+.footer .footer-ul{margin-left: 23%}
+.footer .driver{width: 20px}
+.footer .ali{transform: translateX(-450px);padding-top: 20px;color: #093807}

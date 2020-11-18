@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/Validform_v5.3.2_min.js"></script>
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                alert("请先登录");
+                location.href = 'login.html';
+                // $login.html("登录");
+                // $register.html("注册")
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.removeAttr("href");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'favorite.html'
+                });
+                if (sessionStorage.getItem("u_info_id")!==null){
+                    $(".resume").text("+ 预览简历")
+                }
+            }
+            $("#form-data").Validform({
+                tiptype:3,//1,2,3呈现不同效果，可以自行尝试，当然3是最好
+                showAllError:true,//全部显示错误提示，默认就行
+            })
+        })
+    </script>
+    <script>
+        function formSubmit() {
+            let userInfo_url = 'http://localhost:8080/Page_war/userInfo/addUserInfo';
+            let name = $(".name").val();
+            let phone = $(".phone").val();
+            let email = $(".email").val();
+            let work_experience = $(".work-experience").val();
+            let place = $(".place").val();
+            let workplace = $(".workplace").val();
+            let education = $(".education").val();
+            if (name === "" || phone === "" || email === "" || work_experience === ""||place === ""||workplace === ""){
+                return false
+            }
+            let data = {
+                uId:sessionStorage.getItem("uId"),
+                username:name,
+                phone:phone,
+                email:email,
+                workExperience:work_experience,
+                nowPalce:place,
+                wishWorkplace:workplace,
+                mostEducation:education
+            };
+            $.post(userInfo_url,data,function (results) {
+                if (results.data === 1) {
+                    window.location.href = 'resumeInfo.html'
+                }
+            },'json');
+            return false
+        }
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer
+        }
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*内容*/
+        .user-info{
+            width: 810px;
+            transform: translateX(190px);
+        }
+        .resume-info{
+            width: 810px;
+            height: auto;
+            margin-bottom: 50px;
+            /*transform: translateX(190px);*/
+        }
+        h2{
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 微软雅黑,serif;
+            color: #5a7fff;
+        }
+        .info-border-box{
+            height: auto;
+            border: 1px solid #b7c0ca;
+        }
+        .info-form-box{
+            width: 738px;
+            height: auto;
+            margin-left: 37px;
+            margin-top: 20px;
+        }
+        .info-form-box a{
+            text-decoration: none;
+        }
+        .my-table {
+            width: 738px;
+            height: auto;
+        }
+        .tr-list{
+            height: 50px;
+        }
+        .td-left{
+            width: 120px;
+            height: 25px;
+        }
+        .td-left span{
+            float: right;
+        }
+        .td-left .red{
+            color: red;
+        }
+        .td-right .input-style{
+            width: 230px;
+            height: 30px;
+            font-family: 微软雅黑,serif;
+        }
+        .td-right select option{
+            font-family: 微软雅黑,serif;
+        }
+        .my-table td{
+           padding: 15px 0 15px 0;
+        }
+        .btn{
+            margin: 30px 0 30px 0;
+            width: 200px;
+            transform: translateX(250px);
+        }
+        /*表单验证css*/
+        .Validform_wrong{
+            color: red;
+        }
+        .Validform_right{
+            display: none;
+        }
+        /*底部*/
+        .footer-list{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer-list .footer-ul{margin-left: 23%}
+        .footer-list .driver{width: 20px}
+        .footer-list .ali{transform: translateX(650px);color: #093807;font-family: 微软雅黑,serif}
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="top center">
+        <div class="left fl">
+            <ul>
+<!--                <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                <li><a href="">|</a></li>-->
+                <li><a href="">社招官网</a></li>
+                <li><a href="index.html">首页&nbsp;</a></li>
+                <li><a href="position.html">社会招聘&nbsp;</a></li>
+                <li><a href="">校园招聘&nbsp;</a></li>
+                <li><a href="">了解阿里&nbsp;</a></li>
+                <li><a href="favorite.html">个人中心&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+        </div>
+        <div class="right fr">
+            <div class="fr">
+                <ul>
+                    <li><a>欢迎来到xxx公司</a></li>
+                    <li><a href="./login.html" class="login" >登录</a></li>
+                    <li>|</li>
+                    <li><a href="./register.html" class="register">注册</a></li>
+                    <li>|</li>
+                    <li><a href="">消息通知</a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+    </div>
+</header>
+<div class="container-fluid">
+    <div class="container">
+        <form class="user-info" onsubmit="return formSubmit()" id="form-data" method="post">
+            <div class="resume-info">
+                <h2>基本信息:</h2>
+                <div class="info-border-box">
+                    <div class="info-form-box">
+                        <table class="my-table">
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text">
+                                    <i class="red">*</i>
+                                    姓名：
+                                </span></td>
+                                <td class="td-right">
+                                    <input type="text" name="name" class="input-style name" placeholder="请填写真实姓名"  datatype="s2-12" nullmsg="请输入姓名！" errormsg="昵称至少2个字符,最多12个字符！">
+                                </td>
+                            </tr>
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text">
+                                    <i class="red">*</i>
+                                    手机号：
+                                </span></td>
+                                <td class="td-right">
+                                    <input type="text" name="phone" class="input-style phone" placeholder="请填写手机号" datatype="m" nullmsg="请输入手机号！" errormsg="请输入正确的手机号！">
+                                </td>
+                            </tr>
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text" >
+                                    <i class="red">*</i>
+                                    个人邮箱：
+                                </span></td>
+                                <td class="td-right">
+                                    <input type="email" name="email" class="input-style email" placeholder="请填写邮箱" datatype="e" nullmsg="请输入邮箱！" errormsg="邮箱格式不正确！">
+                                </td>
+                            </tr>
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text" >
+                                    <i class="red">*</i>
+                                    工作年限：
+                                </span></td>
+                                <td class="td-right">
+                                    <select class="input-style work-experience" datatype="*" nullmsg="请选择专业！">
+                                        <option value="">请选择</option>
+                                        <option value="应届毕业生">应届毕业生</option>
+                                        <option value="一年以下">一年以下</option>
+                                        <option value="一年以上">一年以上</option>
+                                        <option value="二年以上">二年以上</option>
+                                        <option value="三年以上">三年以上</option>
+                                        <option value="四年以上">四年以上</option>
+                                        <option value="五年以上">五年以上</option>
+                                        <option value="六年以上">六年以上</option>
+                                        <option value="七年以上">七年以上</option>
+                                        <option value="八年以上">八年以上</option>
+                                        <option value="十年以上">十年以上</option>
+                                        <option value="十五年以上">十五年以上</option>
+                                        <option value="二十年以上">二十年以上</option>
+                                        <option value="三十年以上">三十年以上</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text" >
+                                    <i class="red">*</i>
+                                    现居住地：
+                                </span></td>
+                                <td class="td-right">
+                                    <input type="text" name="place" class="input-style place" placeholder="请填写现居住地址" datatype="*" nullmsg="居住地不能为空！">
+                                </td>
+                            </tr>
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text" >
+                                    <i class="red">*</i>
+                                    期望工作地：
+                                </span></td>
+                                <td class="td-right">
+                                    <input type="text" name="workplace" class="input-style workplace" placeholder="请填写期望工作地" datatype="*" nullmsg="请填写期望地！">
+                                </td>
+                            </tr>
+                            <tr class="tr-list">
+                                <td class="td-left"><span class="span-text" >
+                                    <i class="red">*</i>
+                                    最高学历：
+                                </span></td>
+                                <td class="td-right">
+                                    <select name="education" class="input-style education" datatype="*" nullmsg="请选择学历！">
+                                        <option value="">请选择</option>
+                                        <option value="初中">初中</option>
+                                        <option value="高中">高中</option>
+                                        <option value="职高">职高</option>
+                                        <option value="中专">中专</option>
+                                        <option value="大专">大专</option>
+                                        <option value="本科">本科</option>
+                                        <option value="硕士">硕士</option>
+                                        <option value="博士">博士</option>
+                                        <option value="博士后">博士后</option>
+                                        <option value="其他">其他</option>
+                                        <option value="专科">专科</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <button type="submit" class="btn btn-success">提交</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<footer class="footer-list">
+    <ul class="footer-ul">
+        <li><a href="">xxx集团:</a></li>
+        <li>&nbsp;&nbsp;&nbsp;xxx网络
+            <a href="">-中国站</a>
+            <a href="">国际站</a>
+            <a href="">全球速卖通</a>
+        </li>
+        <li class="driver">|</li>
+        <li><a href="">淘宝网&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">天猫&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">聚划算&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">阿里云&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">中国雅虎&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">支付宝&nbsp;</a></li>
+        <div class="clear"></div>
+    </ul>
+    <ul>
+        <li class="ali">©2014 xxx集团 版权所有</li>
+    </ul>
+</footer>
+</body>
+</html>

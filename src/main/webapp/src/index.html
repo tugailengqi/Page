@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                $login.html("登录");
+                $register.html("注册")
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.removeAttr("href");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'index.html'
+                })
+            }
+        })
+    </script>
+</head>
+<body>
+<div>
+    <!--头部-->
+    <header>
+        <div class="top center">
+            <div class="left fl">
+                <ul>
+<!--                    <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                    <li><a href="">|</a></li>-->
+                    <li><a href="">社招官网</a></li>
+                    <li><a href="index.html">首页&nbsp;</a></li>
+                    <li><a href="position.html">社会招聘&nbsp;</a></li>
+                    <li><a href="">校园招聘&nbsp;</a></li>
+                    <li><a href="login.html">企业服务&nbsp;</a></li>
+                    <li><a href="favorite.html">个人中心&nbsp;</a></li>
+                    <div class="clear"></div>
+                </ul>
+            </div>
+            <div class="right fr">
+                <div class="fr">
+                    <ul>
+                        <li><a>欢迎来到xxx公司</a></li>
+                        <li><a href="login.html" class="login">登录</a></li>
+                        <li>|</li>
+                        <li><a href="register.html" class="register">注册</a></li>
+                        <li>|</li>
+                        <li><a href="">消息通知</a></li>
+                    </ul>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </header>
+<!--    内容：背景图搜索框-->
+    <div class="banner">
+        <div class="ad_top fl">
+            <div class="index-mid-box">
+                <form>
+                    <div class="float-mid">
+                           <p class="en-world" style="font-size: 60px;color: #fff;line-height: 56px;margin: auto">If not now,when?</p>
+                           <p class="en-world" style="font-size: 60px;color: #fff;line-height: 56px;margin: auto">If not me,who?</p>
+                           <p class="en-world" style="font-size: 35px;color: #fff;line-height: 56px;">此时此刻，非我莫属!</p>
+                            <div class="search">
+                                <input type="text" class="shurukuang" placeholder="请输入职位关键字">
+                                <input type="submit" class="sousuo" value="搜索">
+                            </div>
+                        <div class="hot-text">
+                            <p class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">热门搜索：</p>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">JAVA</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">IOS</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">数据</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">安全</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">搜索</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">算法</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">运营</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">视觉</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">交互</a>
+                            <a class="search-key" style="font-family:'黑体',serif;" href="javascript:" data-spm-click="gostr=/hr;locaid=hotPosition">前端</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<!--    内容：职位-->
+    <div class="position">
+        <div class="newPosition-content">
+            <div class="more-position">
+                最新职位
+                <a style="color: #7a828d;text-decoration: none" href="position.html">更多</a>
+            </div>
+            <div class="newPosition-list" id="news" onmouseover="tz()" onmouseout="ks()">
+                <ul class="position-list" id="p">
+
+                </ul>
+            </div>
+            <div class="pic-logo">
+                <a class="show-pic p1" href="">
+                    <img src="image/aliyun.png" alt="" height="59px" width="179px">
+                </a>
+                <a class="show-pic p2">
+                    <img src="image/alibaba.svg" alt="">
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="footer"></div>
+    底部
+    <div class="fixed" style="text-align: center;padding-top: 12px">
+        <span style="color: #c5c3bc;font-size: 12px;font-family: 黑体,serif">xxx集团 Copyright @1999-2020 版权所有</span>
+    </div>
+</div>
+<!--//接口传输-->
+<script>
+    let POSITION_URL = 'http://localhost:8080/Page_war/position/findAll?currentPage=1&pageSize=500';
+    $(function () {
+        $.getJSON(POSITION_URL, function (results) {
+            if (results.status === 200) {
+
+                for (const result of results.data.list) {
+                    $(".position-list").append(
+                        $("<li>").append(
+                            $("<a>").prop("href", "position_detail.html?pId="+result.pId).addClass("positions").text(result.positionName),
+                            $("<em>").addClass("time").text(result.publicTime),
+                            $("<em>").addClass("city").text(result.workPosition)
+                        )
+                    )
+                }
+            }
+        });
+    });
+</script>
+<!--ul滚动-->
+<script>
+        // ul自动滚动
+        let n = document.getElementById("news");
+        let p = document.getElementById("p");
+        let fun = function () {
+            n.scrollTop++;
+            if (n.scrollTop>=p.offsetHeight){
+                n.scrollTop = 0;
+            }
+        };
+        let i = setInterval(fun,20);
+        let tz = function () {
+            clearInterval(i)
+        };
+        let ks = function () {
+            i = setInterval(fun,20)
+        }
+</script>
+<script>
+    //背景图轮播
+    var images=[
+        "image/background.png",
+        "image/background2.jpg",
+        "image/mayun.jpg",
+    ];
+
+    $(images).each(function () {
+        $('<img/>')[0].src = this;
+    });
+
+    var index=0;
+
+    $.backstretch(images[index],{speed:1000});
+
+    setInterval(function(){
+        index=(index>=images.length-1)?0:index+1;
+        $.backstretch(images[index]);
+    },3000);
+</script>
+</body>
+</html>

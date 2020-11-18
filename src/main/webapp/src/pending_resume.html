@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>待处理简历</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="font-awesome-4.7.0/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="layui/css/layui.css">
+    <script src="js/jquery.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/jq-paginator.js"></script>
+    <script src="js/Validform_v5.3.2_min.js"></script>
+    <script src="layui/layui.js"></script>
+    <script>
+        $(function () {
+            $(".login").html(sessionStorage.getItem("email"));
+            $(".register").click(function () {
+                sessionStorage.clear()
+            });
+            $(".screen-down .t1 a").click(function () {
+                // $(this).addClass("current");
+                $(this).addClass("current");
+                $(this).siblings().removeClass("current")
+                // $(this).siblings().removeClass("current")
+            });
+            $(".screen-down .t2 a").click(function () {
+                // $(this).addClass("current");
+                $(this).addClass("current");
+                $(this).siblings().removeClass("current")
+                // $(this).siblings().removeClass("current")
+            });
+            $(".drop").attr("href","pending_resume.html").text("待处理简历");
+            $(".pend").attr("href","undetermined_position.html").text("待定简历")
+        })
+    </script>
+    <script>
+        $(function () {
+            let RESUME_URL = 'http://localhost:8080/Page_war/pending/findByFlag';
+            let data = {
+                flag:1,
+                mid:sessionStorage.getItem("mId"),
+            };
+            $.getJSON(RESUME_URL,data,function (results) {
+                if (results.status === 200) {
+                    if (results.data.size === 0) {
+                        $(".context").empty();
+                        $("#pagination3").empty();
+                        $(".context").append(
+                            $("<div style='width: 220px;margin-left: 300px'>").append(
+                                $("<img style='margin-left: 50px' src='image/bigrobot.png'><br>"),
+                                $("<span>").text("空空如也~")
+                            )
+                        )
+                    }else {
+                        $.jqPaginator("#pagination3", {
+                            totalPages: results.data.pages,
+                            visiblePages: 10,
+                            currentPage: 1,
+                            first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                            prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                            next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                            last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                            page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                            onPageChange: function (page) {
+                                let data = {
+                                    flag:1,
+                                    mid:sessionStorage.getItem("mId"),
+                                    currentPage: page,
+                                    pageSize: 5
+                                };
+                                $.getJSON(RESUME_URL,data,function (results) {
+                                    $(".context").empty();
+                                    if (results.status === 200) {
+                                        for (const result of results.data.list) {
+                                            for (const education of result.eductionExperienceList) {
+                                                $(".context").append(
+                                                    $("<ul class='reset'>").append(
+                                                        $("<li class='onlineResume' style='width: 750px;margin-left: 20px'>").append(
+                                                            // $("<label class='check'>").append($("<input type='checkbox' name='check'>").attr("uid", result.uId)),
+                                                            $("<div class='resumeShow'>").append(
+                                                                $("<a>").append($("<img>").attr("src", "http://localhost:8080/upload/" + result.fileUserList.image)),
+                                                                $("<div class='resumeIntro'>").append(
+                                                                    $("<h3 style='margin: 10px 0;width: 370px'>").append($("<a>").attr("href", "personal_resume.html?uId=" + result.uId).text(result.username)),
+                                                                    $("<div>").html(result.username + "/" + result.user.sex + "/" + result.mostEducation + "/"
+                                                                        + result.workExperience + "/" + result.nowPalce + "<br>" + result.mostEducation + "/" + result.eductionExperienceList[0].school + "/" + result.eductionExperienceList[0].major),
+                                                                ),
+                                                                $("<div class='contactInfo'>").append(
+                                                                    $("<span class='phone'>").text("电话："), result.phone,
+                                                                    $("<span class='email'>").text("邮箱："),
+                                                                    $("<span>").text(result.email),
+                                                                    $("<div class='info'>").append(
+                                                                        $("<a onclick='deletePend(this)'>").attr("uInfoId", result.uInfoId).html("移除&nbsp;&nbsp;&nbsp;"),
+                                                                        $("<a  style='margin-right: 10px'>").attr("uInfoId", result.uInfoId).text("联系他/她"),
+                                                                        $("<a >").attr("uid", result.uId).text("发送感兴趣通知")
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                );
+                                            }
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                    }
+                }
+            });
+        });
+        function deletePend(obj) {
+            let DELETE_URL = 'http://localhost:8080/Page_war/pending/delete';
+            $.post(DELETE_URL,{uInfoId:$(obj).attr("uInfoId")},function (results) {
+                if (results.data === 1) {
+                    $(obj).parents(".reset").remove();
+                }
+            },'json')
+        }
+    </script>
+    <script>
+        // 简历筛选
+        $(function () {
+            let WORK_EXPERIENCE_URL = 'http://localhost:8080/Page_war/pending/queryByWorkExperience';
+            let works = ["应届毕业生","一年以下","一年以上","二年以上","三年以上","四年以上","五年以上","六年以上","七年以上","八年以上","十年以上","十五年以上","二十年以上","三十年以上"];
+            let education  =["初中","高中","职高","中专","其他","大专","专科","本科","硕士","博士","博士后"];
+            $(".screen-down dl a") .click(function () {
+                if ($(this).hasClass("current")){
+                    if ($(this).text()==='应届毕业生'){
+                        works.length = 0;
+                        works.push("应届毕业生");
+                    }
+                    if ($(this).text()==='一年以下'){
+                        works.length = 0;
+                        works.push("应届毕业生","一年以下");
+                    }
+                    if ($(this).text()==='1-3年'){
+                        works.length = 0;
+                        works.push("一年以上","二年以上");
+                    }
+                    if ($(this).text()==='3-5年'){
+                        works.length = 0;
+                        works.push("三年以上","四年以上");
+                    }
+                    if ($(this).text()==='5-10年'){
+                        works.length = 0;
+                        works.push("五年以上","六年以上","七年以上","八年以上");
+                    }
+                    if ($(this).text()==='10年以上'){
+                        works.length = 0;
+                        works.push("十年以上","十五年以上","二十年以上","三十年以上");
+                    }
+                    if ($(this).text() === '大专及以上' || $(this).text() === []){
+                        education.length = 0;
+                        education.push("大专","专科","本科","硕士","博士","博士后")
+                    }
+                    if ($(this).text() === '本科及以上'){
+                        education.length = 0;
+                        education.push("本科","硕士","博士","博士后")
+                    }
+                    if ($(this).text() === '硕士及以上'){
+                        education.length = 0;
+                        education.push("硕士","博士","博士后")
+                    }
+                    if ($(this).text() === '博士及以上'){
+                        education.length = 0;
+                        education.push("博士","博士后")
+                    }
+                    if ($(this).text()==="不限" && $(this).attr("name") === "经验不限") {
+                        works.length = 0;
+                        works.push("应届毕业生","一年以下","一年以上","二年以上","三年以上","四年以上","五年以上","六年以上","七年以上","八年以上","十年以上","十五年以上","二十年以上","三十年以上");
+                    }
+                    if ($(this).text()==="不限" && $(this).attr("name") === "学历不限") {
+                        education.length = 0;
+                        education.push("初中","高中","职高","中专","其他","大专","专科","本科","硕士","博士","博士后")
+                    }
+                    console.log(works);
+                    console.log($.unique(education));
+                    $.ajax({
+                        //traditional深度序列化，防止数组加上[]
+                        traditional:true,
+                        type:'GET',
+                        url:WORK_EXPERIENCE_URL,
+                        dataType:'json',
+                        data:{
+                            workExperience:works,
+                            education:education,
+                            flag:1,
+                            mid:sessionStorage.getItem("mId")
+                        },
+                        success:function (results) {
+                            if (results.status === 200) {
+                                console.log(results.data.size);
+                                if (results.data.size === 0) {
+                                    $(".context").empty();
+                                    $("#pagination3").empty()
+                                    $(".context").append(
+                                        $("<div style='width: 220px;margin-left: 300px'>").append(
+                                            $("<img style='margin-left: 50px' src='image/bigrobot.png'><br>"),
+                                            $("<span style='margin-left: 55px'>").text("空空如也~")
+                                        )
+                                    )
+                                }
+                                $.jqPaginator('#pagination3', {
+                                    totalPages: results.data.pages,
+                                    visiblePages: 10,
+                                    currentPage: 1,
+                                    first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                                    prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                                    next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                                    last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                                    page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                                    onPageChange: function (page) {
+                                        $.ajax({
+                                            traditional:true,
+                                            type:'GET',
+                                            url:WORK_EXPERIENCE_URL,
+                                            dataType:'json',
+                                            data:{
+                                                workExperience:works,
+                                                education:education,
+                                                flag:1,
+                                                mid:sessionStorage.getItem("mId"),
+                                                currentPage:page,
+                                                pageSize: 10
+                                            },
+                                            success:function (results) {
+                                                if (results.status === 200) {
+                                                    $(".context").empty();
+                                                    if (results.status === 200) {
+                                                        for (const result of results.data.list) {
+                                                            for (const education of result.eductionExperienceList) {
+                                                                $(".context").append(
+                                                                    $("<ul class='reset'>").append(
+                                                                        $("<li class='onlineResume' style='width: 750px;margin-left: 20px'>").append(
+                                                                            // $("<label class='check'>").append($("<input type='checkbox' name='check'>").attr("uid",result.uId)),
+                                                                            $("<div class='resumeShow'>").append(
+                                                                                $("<a>").append($("<img>").attr("src","http://localhost:8080/upload/"+result.fileUserList.image)),
+                                                                                $("<div class='resumeIntro'>").append(
+                                                                                    $("<h3 style='margin: 10px 0;width: 370px'>").append($("<a>").attr("href","personal_resume.html?uId="+result.uId).text(result.username)),
+                                                                                    $("<div>").html(result.username+"/"+result.user.sex+"/"+result.mostEducation+"/"
+                                                                                        +result.workExperience+"/"+result.nowPalce+"<br>"+result.mostEducation+"/"+result.eductionExperienceList[0].school+"/"+result.eductionExperienceList[0].major),
+                                                                                    $("<div class='Job-application'>").append(
+                                                                                    )
+                                                                                ),
+                                                                                $("<div class='contactInfo'>").append(
+                                                                                    $("<span class='phone'>").text("电话："),result.phone,
+                                                                                    $("<span class='email'>").text("邮箱："),
+                                                                                    $("<span>").text(result.email),
+                                                                                    $("<div class='info'>").append(
+                                                                                        $("<a onclick='deletePend(this)'>").html("移除&nbsp;&nbsp;&nbsp;"),
+                                                                                        $("<a style='margin-right: 10px'>").attr("uid",result.uId).html("联系他/她"),
+                                                                                        $("<a>").text("发送感兴趣通知")
+                                                                                    )
+                                                                                )
+                                                                            )
+                                                                        )
+                                                                    )
+                                                                );
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                })
+                            }
+                        }
+                    });
+                }
+            })
+        })
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer;
+            text-decoration: none;
+        }
+        /*头部*/
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*导航*/
+        .nav{
+            width: 900px;
+            transform: translateX(120px);
+            margin-bottom: 40px;
+            margin-top: 40px;
+        }
+        .nav ul li{
+            float: left;
+            padding-left: 60px;
+            font-size: 18px;
+        }
+
+        .nav a:hover{
+            border-bottom: solid #12af26;
+        }
+
+        /*点击颜色固定*/
+        .clickstyle a {
+            text-decoration: none;
+            font-size: 18px;
+            border-bottom: solid #12af26;
+        }
+
+        /*内容*/
+        .layui-main{
+            width: 1000px;
+        }
+        .main-box{
+            width: 800px;
+            border: solid 1px #ccc;
+        }
+        .main-list3 a{
+            color: #3e79ff;
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+
+
+        .myTable .text-td{
+            width: 100px;
+            height: 50px;
+        }
+        .myTable tr td input{
+            width: 380px;
+            height: 40px;
+        }
+        .myTable tr td{
+            padding-top: 20px;
+
+        }
+        .myTable tr td textarea{
+            width: 380px;
+
+        }
+        *{
+            font-family: 微软雅黑,serif;
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+
+        .check input[type = checkbox]{
+            width: 17px;
+            height: 17px;
+            margin: 0;
+            border: 0;
+        }
+        .resumeShow{
+            height: 130px;
+            /*background-color: #edf1f7;*/
+        }
+        .resumeShow img{
+            margin-top: 10px;
+            width: 90px;
+            height: 90px;
+        }
+        .resumeIntro{
+            float:right;width: 650px;height: 90px;
+        }
+        .resumeIntro .time{
+            float: right;margin: -25px 0 0 0 ;margin-right: 10px
+        }
+        .contactInfo{
+            /*background: #f2f2f2;*/
+            border-top: 1px dashed #d9d9d9;
+        }
+        .contactInfo .info{
+            float: right;margin-right: 10px
+        }
+        .contactInfo .phone,.email{
+            margin-left: 25px
+        }
+        .table-header{
+            width: 750px;
+            margin-left: 20px;
+            border-bottom: solid 1px #b7c0ca;
+            margin-bottom: 5px;
+        }
+        .screen a{
+            float: right;
+            margin-right: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0C0C0C;
+        }
+        .text{
+            float: left
+        }
+        .screen-down{
+            margin-top: 10px;
+            margin-left: 40px;
+        }
+        .screen-down dl{
+            margin-bottom: 10px;
+        }
+        .screen-down dl dd a{
+            padding: 0 8px;
+            margin-right: 10px;
+        }
+        .screen-down dl dd .current-location{
+            color: #fff;
+            background: #019875;
+        }
+        .screen-down dl dd .current{
+            color: #fff;
+            background: #019875;
+        }
+        .screen-down a:hover{
+            color: #fff;
+            background: #019875;
+        }
+
+        /*底部*/
+        .footer-list{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            margin-top: 50px;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer-list .footer-ul{margin-left: 18%}
+        .footer-list .driver{width: 20px}
+        .footer-list .ali{transform: translateX(450px);color: #093807;font-family: 微软雅黑,serif}
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #edf1f7;
+            min-width: 110px;
+        }
+
+        .dropdown-content a {
+            color: #3e79ff;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {background-color: #f1f1f1}
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="top center">
+        <div class="left fl">
+            <ul>
+<!--                <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                <li><a href="">|</a></li>-->
+                <li><a href="index.html">社招官网</a></li>
+                <li><a href="enterprise_index.html">首页&nbsp;</a></li>
+                <li><a href="post_job.html">职位发布&nbsp;</a></li>
+                <li><a href="">应聘管理&nbsp;</a></li>
+                <li><a href="resume_search.html">简历搜索&nbsp;</a></li>
+                <li><a href="">系统设置&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+        </div>
+        <div class="right fr">
+            <div class="fr">
+                <ul>
+                    <li><a>欢迎来到xxx公司</a></li>
+                    <li><a href="" class="login" ></a></li>
+                    <li>|</li>
+                    <li><a href="./login.html" class="register">退出</a></li>
+                    <li>|</li>
+                    <li><a href="">消息通知</a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+    </div>
+</header>
+<div class="nav">
+    <ul>
+        <li><a href="enterprise_index.html">有效职位</a></li>
+        <li><a href="offline_position.html">已下线职位</a></li>
+        <li class="clickstyle">
+            <div class="dropdown">
+                <a class="drop" href="undetermined_position.html">待定简历</a>
+                <div class="dropdown-content">
+                    <a href="pending_resume.html" class="pend">待定简历处理</a>
+                </div>
+            </div>
+        </li>
+        <li><a href="inappropriate_position.html">不合适简历</a></li>
+        <li><a href="informed_position.html">已通知面试</a></li>
+        <li><a href="filter_position.html">已过滤简历</a></li>
+    </ul>
+</div>
+<div class="layui-container">
+
+    <div class="layui-main">
+        <h3>简历筛选</h3>
+        <div class="main-box">
+            <!--            <div class="search-box">-->
+            <!--                <input class="text" style="font-size: 16px" type="text" placeholder="请输入职位关键字">-->
+            <!--                <input class="layui-btn" type="button" value="搜索">-->
+            <!--            </div>-->
+            <div class="screen-down">
+                <dl class="t1">
+                    <dt class="text">工作经验：</dt>
+                    <dd>
+                        <a class="current-location" name="经验不限">不限</a>
+                        <a>应届毕业生</a>
+                        <a>一年以下</a>
+                        <a>1-3年</a>
+                        <a>3-5年</a>
+                        <a>5-10年</a>
+                        <a>10年以上</a>
+                    </dd>
+                </dl>
+                <dl class="t2">
+                    <dt class="text">最低学历：</dt>
+                    <dd>
+                        <a class="current-location" name="学历不限">不限</a>
+                        <a>大专及以上</a>
+                        <a>本科及以上</a>
+                        <a>硕士及以上</a>
+                        <a>博士及以上</a>
+                    </dd>
+                </dl>
+            </div>
+            <div class="main-list3" >
+                <div class="table-header">
+                </div>
+                <div class="context">
+
+                </div>
+                <div class="footer">
+                    <div id="demo1-text3"></div>
+                    <ul class="pagination" id="pagination3"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="footer-list">
+        <ul class="footer-ul">
+            <li><a href="">xxx集团:</a></li>
+            <li>&nbsp;&nbsp;&nbsp;xxx网络
+                <a href="">-中国站</a>
+                <a href="">国际站</a>
+                <a href="">全球速卖通</a>
+            </li>
+            <li class="driver">|</li>
+            <li><a href="">淘宝网&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">天猫&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">聚划算&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">阿里云&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">中国雅虎&nbsp;</a></li>
+            <li class="driver">|</li>
+            <li><a href="">支付宝&nbsp;</a></li>
+            <div class="clear"></div>
+        </ul>
+        <ul>
+            <li class="ali">©2014 xxx集团 版权所有</li>
+        </ul>
+    </footer>
+</div>
+</body>
+</html>

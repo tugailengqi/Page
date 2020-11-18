@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>已下线职位</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="font-awesome-4.7.0/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <script src="js/jquery.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/jq-paginator.js"></script>
+    <script src="js/Validform_v5.3.2_min.js"></script>
+    <script>
+        $(function () {
+            $(".login").html(sessionStorage.getItem("email"));
+            $(".register").click(function () {
+                sessionStorage.clear()
+            });
+        })
+    </script>
+    <script>
+        $(function () {
+            let findByMid_URL = 'http://localhost:8080/Page_war/position/findByMid';
+            // 点击已下线职位时才刷新
+                let data = {
+                    mId:sessionStorage.getItem("mId"),
+                    flag:1
+                };
+                $.getJSON(findByMid_URL,data,function (results) {
+                    if (results.status === 200) {
+                        if (results.data.size === 0) {
+                            $(".table-hover").empty();
+                            $("#pagination1").empty();
+                            $("#offline-position").after(
+                                $("<div style='width: 230px;margin-left: 300px'>").append(
+                                    $("<img style='margin-left: 50px' src='image/bigrobot.png'><br>"),
+                                    $("<span>").text("目前还没有职位呢，赶紧去发布吧~"),
+                                    $("<a href='post_job.html' class='add-position'>").text("发布职位")
+                                )
+                            )
+                        }
+                        $.jqPaginator('#pagination1', {
+                            totalPages: results.data.pages,
+                            visiblePages: 10,
+                            currentPage: 1,
+                            first: '<li class="prev"><a href="javascript:;">首页</a></li>',
+                            prev: '<li class="prev"><a href="javascript:;">上一页</a></li>',
+                            next: '<li class="next"><a href="javascript:;">下一页</a></li>',
+                            last: '<li class="prev"><a href="javascript:;">末页</a></li>',
+                            page: '<li class="page"><a href="javascript:;">{{page}}</a></li>',
+                            onPageChange: function (page) {
+                                let data = {
+                                    mId:sessionStorage.getItem("mId"),
+                                    flag:1,
+                                    currentPage: page,
+                                    pageSize: 5
+                                };
+                                $.getJSON(findByMid_URL,data, function (results) {
+                                    $(".my-location").text("我的位置：已下线职位");
+                                    $(".body1").empty();
+                                    if (results.status === 200) {
+                                        for (const result of results.data.list) {
+                                            let $body = $(".body1");
+                                            $body.append(
+                                                $("<tr>").append(
+                                                    $("<td>").append(
+                                                        $("<span>").append(
+                                                            $("<a style='color: #1a38ff;font-size: 14px;font-weight: bolder;margin-left: 5px'>").attr("href","positionScan.html?pId="+result.pId+"&flag="+result.flag).text(result.positionName)
+                                                        )
+                                                    ),
+                                                    $("<td>").append(
+                                                        $("<span>").text(result.positionType)
+                                                    ),
+                                                    result.pNum == null?$("<td>").append(
+                                                        $("<span>").text("若干")
+                                                    ):$("<td>").append(
+                                                        $("<span>").text(result.pNum)
+                                                    ),
+                                                    $("<td>").append(
+                                                        $("<span>").text(result.publicTime)
+                                                    ),
+                                                    $("<td>").append(
+                                                        $("<span>").append(
+                                                            $("<a onclick='modify(this)' >").html("修改&nbsp;").attr("pId",result.pId),
+                                                            $("<a onclick='online(this)'>").html("&nbsp;上线&nbsp;").attr("pId",result.pId),
+                                                            $("<a onclick='isDelete(this)'>").html("&nbsp;移除").attr("pId",result.pId),
+                                                        )
+                                                    )
+                                                )
+                                            );
+                                            $("#offline-position").text("已下线职位："+results.data.total+"个")
+                                        }
+                                    }
+                                })
+                            }
+                        });
+                    }
+                });
+        });
+        //修改
+        function modify(obj) {
+            let findByUid_URL = 'http://localhost:8080/Page_war/position/findById';
+            let UPDATE_JOP_URL = 'http://localhost:8080/Page_war/position/updateJob';
+            // $("#myModal").modal();
+            let data = {
+                pId:$(obj).attr("pId"),
+                flag:1
+            };
+            $.getJSON(findByUid_URL,data,function (results) {
+                if (results.status === 200){
+                    $("#myModal").modal(
+                        $(".type").val(results.data.positionType),
+                        $(".name").val(results.data.positionName),
+                        $(".department").val(results.data.departmentName),
+                        $(".location").val(results.data.workPosition),
+                        $(".train_contents").val(results.data.require),
+                        $(".work-experience").val(results.data.workExperience),
+                        $(".degree").val(results.data.degree),
+                        results.data.pNum == null ? $(".num").val("若干"): $(".num").val(results.data.pNum),
+                        $(".responsibility").val(results.data.responsibility),
+                        $("#update").click(function () {
+                            let type = $(".type").val();
+                            let name = $(".name").val();
+                            let department = $(".department").val();
+                            let location = $(".location").val();
+                            let require = $(".train_contents").val();
+                            let work = $(".work-experience").val();
+                            let degree = $(".degree").val();
+                            let num = $(".num").val();
+                            let responsibility = $(".responsibility").val();
+                            if (type === "" || name === "" || location === ""||num ==="" ||department === "" || require === ""||work === ""||degree === ""||responsibility === ""){
+                                return false
+                            } else {
+                                let data = {
+                                    pId: results.data.pId,
+                                    positionName: name,
+                                    responsibility: responsibility,
+                                    positionType: type,
+                                    workPosition: location,
+                                    publicTime: "",
+                                    require: require,
+                                    workExperience: work,
+                                    departmentName: department,
+                                    degree: degree,
+                                    pNum: num
+                                };
+                                $.post(UPDATE_JOP_URL,data,function (result) {
+                                    if (result.data === 1){
+                                        alert("修改成功");
+                                        location.href = 'enterprise_index.html'
+                                    }
+                                },'json')
+                            }
+                        })
+                    )
+                }
+            })
+        }
+        // 上线
+        function online(obj) {
+            let findByMid_URL = 'http://localhost:8080/Page_war/position/findByMid';
+            let b = window.confirm("你确定重新上线该职位吗");
+            if (b === true) {
+                let UPDATE_FLAG_URL = 'http://localhost:8080/Page_war/position/updateFlag';
+                let data = {
+                    pId: $(obj).attr("pId"),
+                    flag: 0
+                };
+                $.post(UPDATE_FLAG_URL, data, function (results) {
+                    if (results.data === 1) {
+                        $(obj).parent().parent().parent().remove();
+                        let data1 = {
+                            mId: sessionStorage.getItem("mId"),
+                            flag: 1
+                        };
+
+                        $.getJSON(findByMid_URL, data1, function (results) {
+                            if (results.status === 200) {
+                                $("#offline-position").text("已下线职位："+results.data.total+"个");
+                            }
+                        })
+                    }
+                }, 'json')
+            }
+        }
+        // 移除
+        function isDelete(obj) {
+            let findByMid_URL = 'http://localhost:8080/Page_war/position/findByMid';
+            let b = window.confirm("你确定永久删除该职位吗");
+            if (b === true) {
+                let DELETE_URL = 'http://localhost:8080/Page_war/position/isDeletePosition';
+                let data = {
+                    pId: $(obj).attr("pId"),
+                };
+                $.post(DELETE_URL,data,function (results) {
+                    if (results.data === 1) {
+                        $(obj).parent().parent().parent().remove();
+                        let data1 = {
+                            mId: sessionStorage.getItem("mId"),
+                            flag: 1
+                        };
+
+                        $.getJSON(findByMid_URL, data1, function (results) {
+                            if (results.status === 200) {
+                                $("#offline-position").text("已下线职位："+results.data.total+"个");
+                            }
+                        })
+                    }
+                },'json')
+            }
+        }
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer;
+            text-decoration: none;
+        }
+        /*头部*/
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*内容*/
+        .container-fluid{
+            background: #edf1f7;
+            margin-bottom: 120px;
+        }
+        .container{
+            margin-top: 30px;
+        }
+        /*导航*/
+        .nav{
+            width: 900px;
+            transform: translateX(120px);
+            margin-bottom: 40px;
+        }
+        .nav ul li{
+            float: left;
+            padding-left: 60px;
+            font-size: 18px;
+        }
+
+        .nav a:hover{
+            border-bottom: solid #12af26;
+        }
+        /*点击颜色固定*/
+        .clickstyle a {
+            text-decoration: none;
+            font-size: 18px;
+            border-bottom: solid #12af26;
+        }
+
+        /* 鼠标移动到选项上修改背景颜色 */
+
+        .main-context{
+            width: 800px;
+            transform: translateX(180px);
+            /*margin/-right: 30px;*/
+        }
+        .list-box{
+            /*width: 850px;*/
+            border: 1px solid #ccc;
+            background: #ffffff;
+        }
+        .table thead tr th{
+
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+        .position{
+            color: #296aff;
+        }
+
+
+        /*模态框css*/
+        .modal-dialog{
+            width: 800px;
+        }
+        .modal-body{
+            width: 798px;
+            border: solid 1px #ccc;
+            background: #edf1f7;
+            margin-bottom: 40px;
+        }
+        .modal-title{
+            color: #296aff;
+        }
+        .text-span{
+            font-size: 18px;
+            /*font-weight: bold;*/
+            font-family: 微软雅黑,serif;
+        }
+        .myTable{
+            font-size: 18px;
+            margin-left: 100px;
+        }
+        .myTable .text-td{
+            width: 100px;
+            height: 50px;
+        }
+        .myTable tr td input{
+            width: 380px;
+            height: 40px;
+        }
+        .myTable tr td{
+            padding-top: 20px;
+
+        }
+        .myTable tr td textarea{
+            width: 380px;
+
+        }
+        *{
+            font-family: 微软雅黑,serif;
+        }
+        .btn{
+            margin-top: 40px;
+            width: 100px;
+            transform: translateX(250px);
+            margin-bottom: 40px;
+            margin-left: 20px;
+        }
+        .red{
+            color: red;
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+        form h3{
+            border-bottom: dashed 1px;
+            color: #FF6600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+        .check input[type = checkbox]{
+            width: 17px;
+            height: 17px;
+            margin: 0;
+            border: 0;
+        }
+
+        .resumeShow img{
+            margin-top: 10px;
+            width: 90px;
+            height: 90px;
+        }
+
+        .text{
+            float: left
+        }
+        .add-position{
+            display: block;
+            width: 105px;
+            height: 30px;
+            background: #2a96ff;
+            color: #ffffff !important;
+            text-align: center;
+            line-height: 30px;
+            font-size: 14px;
+            border-radius: 14px;
+            box-shadow: 0 5px 10px #d8ecff;
+            margin-left: 40px;
+            margin-top: 5px;
+        }
+        /*表单验证css*/
+        .Validform_wrong{
+            color: red;
+        }
+        .Validform_right{
+            display: none;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #edf1f7;
+            min-width: 110px;
+        }
+
+        .dropdown-content a {
+            color: #3e79ff;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {background-color: #f1f1f1}
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        /*底部*/
+        .navbar{
+            width: 100%;
+            border-top: 1px solid #c5c3bc;
+        }
+        .footer{
+            width: 100%;
+            height: 81px;
+
+            /*transform: translateY(100px);*/
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        .footer .footer-ul{margin-left: 17%}
+        .footer .driver{width: 20px}
+        .footer .ali{padding-top: 20px;color: #093807;transform: translateX(450px)}
+    </style>
+</head>
+<body>
+<header>
+    <div class="top center">
+        <div class="left fl">
+            <ul>
+<!--                <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                <li><a href="">|</a></li>-->
+                <li><a href="index.html">社招官网</a></li>
+                <li><a href="enterprise_index.html">首页&nbsp;</a></li>
+                <li><a href="post_job.html">职位发布&nbsp;</a></li>
+                <li><a href="">应聘管理&nbsp;</a></li>
+                <li><a href="resume_search.html">简历搜索&nbsp;</a></li>
+                <li><a href="">系统设置&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+        </div>
+        <div class="right fr">
+            <div class="fr">
+                <ul>
+                    <li><a>欢迎来到xxx公司</a></li>
+                    <li><a href="" class="login" ></a></li>
+                    <li>|</li>
+                    <li><a href="./login.html" class="register">退出</a></li>
+                    <li>|</li>
+                    <li><a href="">消息通知</a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+    </div>
+</header>
+<div class="container-fluid">
+
+    <div class="container">
+        <div class="nav">
+            <ul>
+                <li ><a href="enterprise_index.html">有效职位</a></li>
+                <li class="clickstyle"><a id="offline">已下线职位</a></li>
+                <li >
+                    <div class="dropdown">
+                        <a class="drop" href="undetermined_position.html">待定简历</a>
+                        <div class="dropdown-content">
+                            <a href="pending_resume.html">待定简历处理</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="inappropriate_position.html">不合适简历</a></li>
+                <li><a href="informed_position.html">已通知面试</a></li>
+                <li><a href="filter_position.html">已过滤简历</a></li>
+            </ul>
+        </div>
+        <div class="main-context">
+            <h4 class="my-location" style="font-size: 12px"></h4>
+            <div class="list-box">
+                <div class="main-list2">
+                    <h3 class="position" id="offline-position">已下线职位</h3>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th width="30%"><span style="margin-left: 5px">职位名称</span></th>
+                            <th width="15%"><span>职位类别</span></th>
+                            <th width="15%"><span>招聘人数</span></th>
+                            <th width="15%"><span>更新时间</span></th>
+                            <th width="15%"><span style="margin-left: 40px">操作</span></th>
+                        </tr>
+                        </thead>
+                        <tbody class="body1">
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <div id="demo1-text2"></div>
+                        <ul class="pagination" id="pagination1"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="container">
+            <footer class="footer">
+                <ul class="footer-ul">
+                    <li><a href="">xxx集团:</a></li>
+                    <li>&nbsp;&nbsp;&nbsp;xxx网络
+                        <a href="">-中国站</a>
+                        <a href="">国际站</a>
+                        <a href="">全球速卖通</a>
+                    </li>
+                    <li class="driver">|</li>
+                    <li><a href="">淘宝网&nbsp;</a></li>
+                    <li class="driver">|</li>
+                    <li><a href="">天猫&nbsp;</a></li>
+                    <li class="driver">|</li>
+                    <li><a href="">聚划算&nbsp;</a></li>
+                    <li class="driver">|</li>
+                    <li><a href="">阿里云&nbsp;</a></li>
+                    <li class="driver">|</li>
+                    <li><a href="">中国雅虎&nbsp;</a></li>
+                    <li class="driver">|</li>
+                    <li><a href="">支付宝&nbsp;</a></li>
+                    <div class="clear"></div>
+                </ul>
+                <ul>
+                    <li class="ali">©2014 xxx集团 版权所有</li>
+                </ul>
+            </footer>
+        </div>
+    </nav>
+</div>
+
+
+<!-- 模态框（Modal）添加 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    修改职位
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form id="post-form" method="post" onsubmit="" enctype="multipart/form-data"  accept-charset="UTF-8">
+                    <h3>职位信息</h3>
+                    <table class="myTable">
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>职位类别：</span></td>
+                            <td><input type="text" id="category" class="type" datatype="*" nullmsg="职位类别不能为空" placeholder="如：技术/产品" /></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>职位名称：</span></td>
+                            <td><input type="text" class="name"  datatype="*" nullmsg="职位名称不能为空" placeholder="请输入职位名称"/></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>所属部门：</span></td>
+                            <td><input type="text" class="department" datatype="*" nullmsg="所属部门不能为空" placeholder="如：技术部"/></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>工作地点：</span></td>
+                            <td><input type="text" class="location" datatype="*" nullmsg="工作地点不能为空" placeholder="如：广州"/></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>招聘人数：</span></td>
+                            <td><input type="text" class="num"  datatype="*" nullmsg="招聘人数不能为空" placeholder="0表示招聘若干人数"/></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>岗位需求：</span></td>
+                            <td><textarea type="Require|Limit" class="text train_contents" rows="5" minlength="3" placeholder="请填写岗位需求" maxlength="1000" datatype="*3-1000" nullmsg="岗位需求不能为空" errormsg="岗位需求至少3字符"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>工作经验：</span></td>
+                            <td>
+                                <select class="input-style work-experience" datatype="*" nullmsg="请选择！">
+                                    <option value="">请选择</option>
+                                    <option value="应届毕业生">应届毕业生</option>
+                                    <option value="一年以下">一年以下</option>
+                                    <option value="一年以上">一年以上</option>
+                                    <option value="二年以上">二年以上</option>
+                                    <option value="三年以上">三年以上</option>
+                                    <option value="四年以上">四年以上</option>
+                                    <option value="五年以上">五年以上</option>
+                                    <option value="六年以上">六年以上</option>
+                                    <option value="七年以上">七年以上</option>
+                                    <option value="八年以上">八年以上</option>
+                                    <option value="十年以上">十年以上</option>
+                                    <option value="十五年以上">十五年以上</option>
+                                    <option value="二十年以上">二十年以上</option>
+                                    <option value="三十年以上">三十年以上</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>学历需求：</span></td>
+                            <td><input type="text" class="degree" datatype="*" nullmsg="学历需求为空！" placeholder="如：本科，专科"/></td>
+                        </tr>
+                        <tr>
+                            <td class="text-td"><span class="text-span"><span class="red">*</span>岗位描述：</span></td>
+                            <td><textarea type="Require|Limit" class="text responsibility" rows="5" minlength="3" maxlength="1000" datatype="*" nullmsg="岗位描述不能为空" errormsg="岗位需求至少3字符"></textarea></td>
+                        </tr>
+                    </table>
+                    <button class="btn btn-success" type="submit" id="update">修改</button>
+                    <button class="btn btn-success" type="button" data-dismiss="modal">关闭</button>
+                </form>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+</html>

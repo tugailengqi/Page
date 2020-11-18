@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简历预览</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+        $(function () {
+            let username = sessionStorage.getItem("username");
+            let $login = $(".login");
+            let $register = $(".register");
+            if (username === null){
+                alert("请先登录");
+                location.href = 'login.html';
+            }else {
+                $login.html(username);
+                $login.attr("href","favorite.html");
+                $register.html("退出");
+                $register.removeAttr("href");
+                $register.click(function () {
+                    sessionStorage.clear();
+                    location.href = 'position.html'
+                })
+            }
+        })
+    </script>
+    <script>
+        $(function () {
+            let FIND_USER_BY_ID_URL = 'http://localhost:8080/Page_war/userInfo/findByUserId';
+            let data = {
+                uId:sessionStorage.getItem("uId")
+            };
+            $.getJSON(FIND_USER_BY_ID_URL,data,function (results) {
+                if (results.status === 200){
+                            $(".main-list").append(
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("姓&nbsp;&nbsp;名："),results.data.username,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("手&nbsp;&nbsp;机："),results.data.phone,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("E-email："),results.data.email,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("手&nbsp;&nbsp;机："),results.data.phone,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("居&nbsp;住&nbsp;地："),results.data.nowPalce,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("期望工作地："),results.data.wishWorkplace,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("工作年限："),results.data.workExperience,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("最高学历："),results.data.mostEducation,
+                                )
+                            );
+
+                        $(".main-img").append(
+                            $("<img width='120' height='150'>").attr("src","http://localhost:8080/upload/"+results.data.fileUserList.image)
+                        );
+                        $(".userInfo").before(
+                            $("<h2 class='bg-title'>").html(results.data.username+"&nbsp;简历预览")
+                        );
+                        for (const education of results.data.eductionExperienceList) {
+                            $(".education-list").append(
+                                $("<li class='span-text'>").append(
+                                    $("<b>").html(education.educationStartTime+"&nbsp;至&nbsp;"+education.educationEndTime)," | "+education.school,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("专&nbsp;业："),education.major,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("学&nbsp;历："),education.education,
+                                ),
+                                $("<li class='span-text'>").append(
+                                    $("<span>").html("专业描述： "),education.majorDescription,
+                                ),
+                            )
+                        }
+                    for (const work of results.data.workExperienceList) {
+                        $(".work-list").append(
+                            $("<li class='span-text em'>").append(
+                                $("<b>").html("工作单位："),work.workUnit,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("工作时间："),work.workStartTime+"&nbsp;--&nbsp;"+work.workEndTime,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("职&nbsp;位："),work.position,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("职责描述： "),work.workResponsibilities,
+                            ),
+                        )
+                    }
+                    for (const project of results.data.projectExperienceList) {
+                        $(".project-list").append(
+                            $("<li class='span-text em'>").append(
+                                $("<b>").html("项目名称："),project.projectName,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("时&nbsp;间："),project.projectStartTime+"&nbsp;--&nbsp;"+project.projectEndTime,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("职责描述： "),project.responsibilities,
+                            ),
+                        )
+                    }
+                    for (const train of results.data.trainExperienceList) {
+                        $(".train-list").append(
+                            $("<li class='span-text em'>").append(
+                                $("<b>").html("培训机构："),train.trainInstitutions,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("时&nbsp;间："),train.trainStartTime+"&nbsp;--&nbsp;"+train.trainEndTime,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("证&nbsp;书："),train.certificate,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("职责描述： "),train.trainContents,
+                            ),
+                        )
+                    }
+                        $(".file-list").append(
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("简&nbsp;历&nbsp;附&nbsp;件："),results.data.fileUserList.resume,
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("附&nbsp;件&nbsp;作&nbsp;品："),results.data.fileUserList.works
+                            ),
+                            $("<li class='span-text'>").append(
+                                $("<span>").html("其&nbsp;他&nbsp;附&nbsp;件："),results.data.fileUserList.other,
+                            ),
+                        )
+                    }
+            })
+        })
+    </script>
+    <style>
+        /*鼠标移入变成小手形*/
+        a:hover{
+            cursor:pointer
+        }
+        header{width: 100%;height: 52px;background: #2c2f33}
+        header .top{width: 1226px;height: 52px;line-height: 52px;}
+        header .top a{text-decoration: none}
+        header .top .left{margin-left: 100px}
+        header .top .left ul li{float: left;font-size: 14px;color: #ccc;list-style: none;}
+        header .top .left ul li a{display:inline-block;padding:0 8px;font-size: 14px;color:#FFFFFF;}
+        header .top .left ul li a:hover{color: rgb(255,103,0); }
+        header .top .right .fr ul li a:hover{color: rgb(255,103,0); }
+
+        header .top .right ul li{float: left;font-size: 14px;color: #ccc;list-style: none}
+        header .top .right ul li a{display:block;padding:0 8px;font-size: 14px;;color: #FFFFFF;}
+        header .top .right ul li a:hover{color:#fff;}
+        header .top .right .gouwuche a{color:#fff;}
+        *{margin: 0;padding: 0;text-decoration: none;list-style-type: none;font-family:"黑体",serif;}
+        .center{margin: 0 auto;}
+        .fl{float: left;}
+        .fr{float: right;}
+        .clear{clear:both;}
+
+        /*内容*/
+        .main-box{
+            width: 910px;
+            height: auto;
+            margin-left: 219.5px;
+            border: 1px solid #D7D7D7;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+        .main-box .bg-title{
+            background: #F2F2F2;
+            color: #999;
+            font-size: 14px;
+            transform: translateY(-30px);
+            /*height: 40px;*/
+            padding: 5px 10px;
+        }
+        .bg-title{
+            height: 40px;
+            line-height: 30px;
+            border-bottom: 1px solid #E4E4E4;
+            font-weight: bold;
+        }
+        .main-msg{
+            width: 820px;
+            height: auto;
+            margin: 0 40px;
+            border-bottom: 1px dashed #D7D7D7;
+            /*border: 1px solid #E4E4E4;*/
+            /*position: relative;*/
+        }
+        h3{
+            display: block;
+            font-size: 1.17em;
+            margin-block-start: 1em;
+            margin-block-end: 1em;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+            font-weight: bold;
+        }
+        .main-msg h3 {
+            color: #FF6600;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .main-msg .main-list{
+            width: 640px;
+            height: auto;
+            list-style: none;
+            color: #666666;
+
+        }
+        .education-list,.work-list,.project-list,.train-list,.file-list{
+            width: 100%;
+            height: auto;
+            list-style: none;
+            color: #666666;
+        }
+        .em{
+            font-weight: bold;
+        }
+        .span-text{
+            padding-top: 20px;
+            margin-left: 40px;
+            font-family: 微软雅黑,serif;
+        }
+        .main-img {
+            float: right;
+            transform: translateY(-40px);
+        }
+        .sub-box{
+            height: 47px;
+            transform: translateX(400px);
+            margin-top: 20px;
+        }
+        .sub-box .back{
+            width: 60px;
+            background: #e87502;
+            border: 1px solid #c2c1ff;
+            border-radius: 5px;
+            height: 30px;
+            font-family: 微软雅黑,serif;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .sub-box .search-position{
+            width: 100px;
+            background: #e87502;
+            border: 1px solid #c2c1ff;
+            border-radius: 5px;
+            height: 30px;
+            font-family: 微软雅黑,serif;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .main-category{
+            width: 1000px;
+            margin-left: 175px;
+            height: 50px;
+            border-bottom:1px solid #ff9900;
+            margin-bottom: 40px;
+        }
+        .main-category .resume{
+            float: right;
+            margin-top: 30px;
+            font-family: 微软雅黑,serif;
+            color: #3e79ff;
+            font-weight: bold;
+        }
+        .main-category ul li{
+            float: left;
+            margin-top: 30px;
+            padding-left: 10px;
+            padding-top: 4px;
+            border: 1px solid #E4E4E4;
+            background: #f9f9f9;
+            height: 27px;
+            width: 76px;
+            font-family: 微软雅黑,serif;
+        }
+        .current{
+            margin-left: 15px;
+            margin-right: 15px;
+            background: #ff9900;
+
+        }
+        .apply{
+            margin-right: 15px;
+        }
+        .main-category a{
+            text-decoration: none;
+        }
+        /*底部*/
+        .footer{
+            width: 100%;
+            height: 81px;
+            border-top: 1px solid #c5c3bc;
+            /*transform: translateY(-40px);*/
+        }
+        footer ul li{float: left;font-size: 14px;color: #ccc;list-style: none;margin-top: 20px;}
+        .footer .footer-ul{margin-left: 23%}
+        .footer .driver{width: 20px}
+        .footer .ali{transform: translateX(-450px);padding-top: 20px;color: #093807}
+    </style>
+</head>
+<body>
+<header>
+    <div class="top center">
+        <div class="left fl">
+            <ul>
+<!--                <li><a href="" target="_blank"><img src="image/logo.png" alt="" height="20"></a></li>-->
+<!--                <li><a href="">|</a></li>-->
+                <li><a href="">社招官网</a></li>
+                <li><a href="index.html">首页&nbsp;</a></li>
+                <li><a href="position.html">社会招聘&nbsp;</a></li>
+                <li><a href="">校园招聘&nbsp;</a></li>
+                <li><a href="">了解阿里&nbsp;</a></li>
+                <li><a href="favorite.html">个人中心&nbsp;</a></li>
+                <div class="clear"></div>
+            </ul>
+        </div>
+        <div class="right fr">
+            <div class="fr">
+                <ul>
+                    <li><a>欢迎来到xxx公司</a></li>
+                    <li><a href="./login.html" class="login" >登录</a></li>
+                    <li>|</li>
+                    <li><a  class="register">注册</a></li>
+                    <li>|</li>
+                    <li><a href="">消息通知</a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+    </div>
+</header>
+<div class="main-category">
+    <a class="resume" href="resumeInfo.html">修改简历</a>
+    <ul>
+        <li class="apply"><a href="apply.html">我的申请</a></li>
+        <li><a href="favorite.html">我的收藏</a></li>
+        <li class="current"  style="background: #ff9900"><a style="color: #ffffff" href="resumeScan.html">个人资料</a></li>
+    </ul>
+</div>
+<div class="main-box">
+<!--    <h2 class="bg-title">冷七 简历预览</h2>-->
+
+    <div class="main-msg userInfo">
+        <h3>基本信息</h3>
+        <div class="main-img"></div>
+
+        <ul class="main-list">
+
+        </ul>
+    </div>
+    <div class="main-msg">
+        <h3>教育情况</h3>
+        <ul class="education-list"></ul>
+    </div>
+    <div class="main-msg">
+        <h3>工作经验</h3>
+        <ul class="work-list"></ul>
+    </div>
+    <div class="main-msg">
+        <h3>项目经历</h3>
+        <ul class="project-list"></ul>
+    </div>
+    <div class="main-msg">
+        <h3>培训经历</h3>
+        <ul class="train-list"></ul>
+    </div>
+    <div class="main-msg">
+        <h3>培训经历</h3>
+        <ul class="file-list"></ul>
+    </div>
+    <div class="sub-box">
+        <a href="resumeInfo.html"><input class="back" type="button" value="返回"></a>
+        <a href="position.html"><input class="search-position" type="button" value="搜职位"></a>
+    </div>
+</div>
+<footer class="footer">
+    <ul class="footer-ul">
+        <li><a href="">xxx集团:</a></li>
+        <li>&nbsp;&nbsp;&nbsp;xxx网络
+            <a href="">-中国站</a>
+            <a href="">国际站</a>
+            <a href="">全球速卖通</a>
+        </li>
+        <li class="driver">|</li>
+        <li><a href="">淘宝网&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">天猫&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">聚划算&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">阿里云&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">中国雅虎&nbsp;</a></li>
+        <li class="driver">|</li>
+        <li><a href="">支付宝&nbsp;</a></li>
+        <div class="clear"></div>
+    </ul>
+    <ul>
+        <li class="ali">©2014 xxx集团 版权所有</li>
+    </ul>
+</footer>
+</body>
+</html>
